@@ -56,14 +56,6 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
   // Showcase thumbnails using all available generated images from public/generated
   const showcaseThumbnails = [
     {
-      id: 'tech-review',
-      title: 'Advanced Tech Tutorial',
-      description: 'Professional tech review with modern design elements',
-      image: '/generated/thumbnail_a2f109fd-f5eb-4f55-a949-2153d19494af.png',
-      views: '2.1M',
-      ctr: '14.8%'
-    },
-    {
       id: 'gaming-setup',
       title: 'Ultimate Gaming Setup',
       description: 'High-energy gaming content with vibrant colors',
@@ -96,22 +88,6 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
       ctr: '15.4%'
     },
     {
-      id: 'business-tips',
-      title: 'Business Success Secrets',
-      description: 'Professional business content with corporate style',
-      image: '/generated/thumbnail_a2708ce8-871c-4128-a627-a64321339f01.png',
-      views: '1.7M',
-      ctr: '12.9%'
-    },
-    {
-      id: 'creative-design',
-      title: 'Creative Design Masterclass',
-      description: 'Artistic content with vibrant creative elements',
-      image: '/generated/thumbnail_868bdb77-cdbb-4d31-83d4-a339796d9e89.png',
-      views: '2.4M',
-      ctr: '16.8%'
-    },
-    {
       id: 'lifestyle-tips',
       title: 'Lifestyle Transformation',
       description: 'Modern lifestyle content with clean aesthetics',
@@ -120,44 +96,12 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
       ctr: '13.2%'
     },
     {
-      id: 'music-production',
-      title: 'Music Production Secrets',
-      description: 'Dynamic music content with rhythmic elements',
-      image: '/generated/thumbnail_973cf28f-0e1f-4478-b925-37873b6ef208.png',
-      views: '2.6M',
-      ctr: '15.9%'
-    },
-    {
-      id: 'sports-highlights',
-      title: 'Epic Sports Moments',
-      description: 'High-energy sports content with action shots',
-      image: '/generated/thumbnail_e5919e8-1cdb-40f4-89fc-c2a748fd6157.png',
-      views: '3.2M',
-      ctr: '17.5%'
-    },
-    {
-      id: 'educational-content',
-      title: 'Learning Made Easy',
-      description: 'Educational content with clear visual hierarchy',
-      image: '/generated/thumbnail_cbe90707-832b-46ff-bddf-265d21ffd73e.png',
-      views: '2.0M',
-      ctr: '14.1%'
-    },
-    {
       id: 'product-review',
       title: 'Honest Product Review',
       description: 'Trustworthy product review with detailed analysis',
       image: '/generated/thumbnail_7b00727d-ce6e-46f6-aeea-841f40bb24bc.png',
       views: '2.7M',
       ctr: '16.3%'
-    },
-    {
-      id: 'comedy-sketch',
-      title: 'Hilarious Comedy Sketch',
-      description: 'Funny content with bright, cheerful colors',
-      image: '/generated/thumbnail_96641c78-343b-4685-b072-a086ca5d1234.png',
-      views: '3.8M',
-      ctr: '18.9%'
     },
     {
       id: 'beauty-tutorial',
@@ -184,38 +128,6 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
       ctr: '19.2%'
     },
     {
-      id: 'tech-news',
-      title: 'Breaking Tech News',
-      description: 'Latest tech updates with modern design',
-      image: '/generated/thumbnail_ca113eaf-291b-4edb-a7e7-d9faa355285b.png',
-      views: '2.9M',
-      ctr: '16.7%'
-    },
-    {
-      id: 'fitness-challenge',
-      title: '30-Day Fitness Challenge',
-      description: 'Motivational fitness challenge with progress tracking',
-      image: '/generated/thumbnail_ac04dd41-cb3f-48f6-a3d5-2f75005bcec3.png',
-      views: '3.3M',
-      ctr: '17.8%'
-    },
-    {
-      id: 'travel-guide',
-      title: 'Ultimate Travel Guide',
-      description: 'Comprehensive travel tips with stunning visuals',
-      image: '/generated/thumbnail_cef5d262-b965-474a-b7b6-3ac278f918ab.png',
-      views: '2.2M',
-      ctr: '14.9%'
-    },
-    {
-      id: 'cooking-masterclass',
-      title: 'Chef\'s Cooking Secrets',
-      description: 'Professional cooking techniques with beautiful plating',
-      image: '/generated/thumbnail_3625799f-a956-464c-a39b-cb47fcf0df5f.png',
-      views: '2.5M',
-      ctr: '16.1%'
-    },
-    {
       id: 'business-strategy',
       title: 'Business Growth Strategy',
       description: 'Strategic business insights with professional layout',
@@ -232,52 +144,12 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
       ctr: '16.4%'
     },
     {
-      id: 'health-wellness',
-      title: 'Health & Wellness Tips',
-      description: 'Holistic health content with calming aesthetics',
-      image: '/generated/thumbnail_ca712204-4183-4d70-9c76-ef107f5f85ad.png',
-      views: '2.3M',
-      ctr: '15.3%'
-    },
-    {
-      id: 'photography-tips',
-      title: 'Photography Pro Tips',
-      description: 'Professional photography advice with visual examples',
-      image: '/generated/thumbnail_0346ea5b-bde6-432c-a779-4d76a7313911.png',
-      views: '2.0M',
-      ctr: '14.2%'
-    },
-    {
-      id: 'diy-projects',
-      title: 'Amazing DIY Projects',
-      description: 'Creative DIY content with step-by-step visuals',
-      image: '/generated/thumbnail_4486f8ea-fdae-4b26-826f-4127ab90c4d7.png',
-      views: '1.7M',
-      ctr: '13.1%'
-    },
-    {
-      id: 'science-explained',
-      title: 'Science Made Simple',
-      description: 'Complex science concepts with clear explanations',
-      image: '/generated/thumbnail_602e710e-9d36-4a8e-9284-4907564828fe.png',
-      views: '2.4M',
-      ctr: '15.8%'
-    },
-    {
       id: 'fashion-trends',
       title: 'Latest Fashion Trends',
       description: 'Trendy fashion content with stylish aesthetics',
       image: '/generated/thumbnail_9ca9bac4-8e0e-4c99-86a8-6bc3ac806948.png',
       views: '2.1M',
       ctr: '15.1%'
-    },
-    {
-      id: 'movie-review',
-      title: 'Blockbuster Movie Review',
-      description: 'Cinematic content with dramatic visual effects',
-      image: '/generated/thumbnail_334bd716-1b5a-459c-8e71-0aeb2c874073.png',
-      views: '3.6M',
-      ctr: '18.1%'
     },
     {
       id: 'investment-tips',
