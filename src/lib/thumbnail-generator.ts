@@ -28,7 +28,7 @@ export class ThumbnailGenerator {
 
   private async downloadReferenceImage(url: string, filename: string): Promise<string> {
     try {
-      console.log(`Downloading reference image: ${filename}`);
+       (`Downloading reference image: ${filename}`);
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to download reference image: ${response.status}`);
@@ -38,7 +38,7 @@ export class ThumbnailGenerator {
       const imagePath = path.join(this.tempReferenceDir, filename);
       fs.writeFileSync(imagePath, Buffer.from(buffer));
       
-      console.log(`Reference image saved: ${imagePath}`);
+       (`Reference image saved: ${imagePath}`);
       return imagePath;
     } catch (error) {
       console.error(`Error downloading reference image ${filename}:`, error);
@@ -51,17 +51,14 @@ export class ThumbnailGenerator {
       if (fs.existsSync(this.tempReferenceDir)) {
         const files = fs.readdirSync(this.tempReferenceDir);
         if (files.length === 0) {
-          console.log('🧹 No reference images to clean up');
           return;
         }
         
-        console.log(`🧹 Cleaning up ${files.length} reference images...`);
         for (const file of files) {
           const filePath = path.join(this.tempReferenceDir, file);
           fs.unlinkSync(filePath);
-          console.log(`🗑️ Cleaned up: ${file}`);
+           (`🗑️ Cleaned up: ${file}`);
         }
-        console.log('✅ All reference images cleaned up successfully');
       }
     } catch (error) {
       console.error('❌ Error cleaning up reference images:', error);
@@ -78,35 +75,30 @@ export class ThumbnailGenerator {
   ): Promise<GeneratedThumbnail | null> {
     try {
       // Fetch YouTube reference thumbnails with base64 images
-      console.log('Fetching YouTube reference thumbnails for topic:', userAnswers.topic);
       const { thumbnails: referenceThumbnails, referenceImages: base64Images } = 
         await youtubeAPI.getReferenceThumbnailsForPrompt(userAnswers.topic);
-      
-      console.log('Found', referenceThumbnails.length, 'reference thumbnails');
-      console.log('Found', base64Images.length, 'base64 reference images');
       
       // Download reference images to temporary directory for better quality
       const downloadedReferencePaths: string[] = [];
       try {
-        console.log('🔄 Starting reference image download process...');
+         ('🔄 Starting reference image download process...');
         for (let i = 0; i < Math.min(referenceThumbnails.length, 2); i++) {
           const thumbnail = referenceThumbnails[i];
           const filename = `ref_${i + 1}_${Date.now()}.jpg`;
-          console.log(`📥 Downloading reference image ${i + 1}: ${thumbnail.title}`);
+           (`📥 Downloading reference image ${i + 1}: ${thumbnail.title}`);
           const localPath = await this.downloadReferenceImage(thumbnail.thumbnailUrl, filename);
           downloadedReferencePaths.push(localPath);
-          console.log(`✅ Reference image ${i + 1} downloaded successfully`);
+           (`✅ Reference image ${i + 1} downloaded successfully`);
         }
-        console.log(`🎯 Total reference images downloaded: ${downloadedReferencePaths.length}`);
+         (`🎯 Total reference images downloaded: ${downloadedReferencePaths.length}`);
       } catch (error) {
         console.error('❌ Error downloading reference images:', error);
-        console.log('⚠️ Continuing without downloaded images, using base64 from API...');
+         ('⚠️ Continuing without downloaded images, using base64 from API...');
       }
       
       // Generate optimized prompt
       const prompt = await this.buildComprehensivePrompt(userAnswers, referenceThumbnails, 'Reference thumbnails available', userImage);
       
-      console.log('Generating thumbnail with prompt:', prompt.substring(0, 200) + '...');
 
       // Prepare content for Gemini with reference images
       const contents: any[] = [{ text: prompt }];
@@ -134,11 +126,11 @@ export class ThumbnailGenerator {
             // Use downloaded high-quality images
             const imageBuffer = fs.readFileSync(imagesToUse[i]);
             base64Image = imageBuffer.toString('base64');
-            console.log(`🖼️ Using downloaded reference image ${i + 1}`);
+             (`🖼️ Using downloaded reference image ${i + 1}`);
           } else {
             // Fall back to base64 images from API
             base64Image = imagesToUse[i];
-            console.log(`🖼️ Using API base64 reference image ${i + 1}`);
+             (`🖼️ Using API base64 reference image ${i + 1}`);
           }
           
           contents.push({
@@ -153,15 +145,14 @@ export class ThumbnailGenerator {
             text: `Reference Image ${i + 1}: "${referenceThumbnail.title}" by ${referenceThumbnail.channelTitle} (${parseInt(referenceThumbnail.viewCount).toLocaleString()} views). Study this thumbnail's color scheme, text placement, visual hierarchy, and overall composition. Use it as inspiration for your design.`
           });
           
-          console.log(`✅ Added reference image ${i + 1} to Gemini prompt`);
         } catch (error) {
           console.error(`❌ Error processing reference image ${i + 1}:`, error);
         }
       }
       
-      console.log(`🎯 Total content items sent to Gemini: ${contents.length}`);
-      console.log(`📝 Text items: ${contents.filter(c => c.text).length}`);
-      console.log(`🖼️ Image items: ${contents.filter(c => c.inlineData).length}`);
+       (`🎯 Total content items sent to Gemini: ${contents.length}`);
+       (`📝 Text items: ${contents.filter(c => c.text).length}`);
+       (`🖼️ Image items: ${contents.filter(c => c.inlineData).length}`);
 
       // Generate content with Gemini 2.5 Flash Image Preview
       const result = await genAI.models.generateContent({
@@ -197,7 +188,7 @@ export class ThumbnailGenerator {
               
               // Verify the file was written correctly
               const stats = fs.statSync(imagePath);
-              console.log(`Image saved: ${filename}, size: ${stats.size} bytes`);
+               (`Image saved: ${filename}, size: ${stats.size} bytes`);
               
               const generatedThumbnail: GeneratedThumbnail = {
                 imageUrl: `/api/image/${filename}`,
@@ -225,7 +216,6 @@ export class ThumbnailGenerator {
                 },
               };
 
-              console.log('Thumbnail generated successfully:', filename);
               
               // Clean up reference images after successful generation
               await this.cleanupReferenceImages();
@@ -260,18 +250,12 @@ export class ThumbnailGenerator {
     contextDescription: string,
     userImage?: string
   ): Promise<string> {
-    // DEBUG: Log what's being received
-    console.log('🔍 DEBUG: buildComprehensivePrompt called with:');
-    console.log('🔍 DEBUG: userAnswers:', userAnswers);
-    console.log('🔍 DEBUG: userAnswers.additionalAnswers:', userAnswers.additionalAnswers);
-    console.log('🔍 DEBUG: textOverlay from additionalAnswers:', userAnswers.additionalAnswers?.textOverlay);
-    
+   
     // Use query rewriter for enhanced prompt generation
     const enhancedPrompt = await queryRewriter.generateThumbnailPrompt(userAnswers, referenceThumbnails);
     
     // Add specific Gemini instructions
     const textOverlay = userAnswers.additionalAnswers?.thumbnailText || 'No text needed';
-    console.log('🔍 DEBUG: Final textOverlay value:', textOverlay);
     
     const systemInstructions = this.buildSystemInstructions(userAnswers, textOverlay);
     const styleReference = this.buildYouTubeStyleReference(referenceThumbnails, contextDescription);
@@ -326,27 +310,18 @@ Generate a bright, colorful, eye-catching YouTube thumbnail image now with PERFE
     const logoPreference = userAnswers.additionalAnswers?.logoPreference || 'No logo';
     const logoText = userAnswers.additionalAnswers?.logoText || '';
     
-    // DEBUG: Log what's being processed
-    console.log('🔍 DEBUG: buildSystemInstructions called with:');
-    console.log('🔍 DEBUG: textOverlay:', textOverlay);
-    console.log('🔍 DEBUG: customText:', customText);
-    console.log('🔍 DEBUG: userAnswers.additionalAnswers:', userAnswers.additionalAnswers);
     
     // CTR-optimized text instructions with realistic YouTube text
     let textInstructions = '';
     if (textOverlay === "Custom text (I'll specify)" && customText) {
       textInstructions = `\n7. HIGH-CTR TEXT: Display "${customText}" in LARGE, BOLD font with high contrast outline. Use YouTube-style text formatting with drop shadows.`;
-      console.log('🔍 DEBUG: Setting custom text instructions:', textInstructions);
     } else if (textOverlay === 'Auto-generate from topic') {
       const realisticText = this.generateRealisticYouTubeText(userAnswers.topic);
       textInstructions = `\n7. HIGH-CTR TEXT: Use EXACTLY this text: "${realisticText}". Format it in LARGE, BOLD font with high contrast outline and drop shadows. This text is specifically crafted for YouTube success.`;
-      console.log('🔍 DEBUG: Setting auto-generated text instructions:', textInstructions);
     } else if (textOverlay === 'No text needed') {
       textInstructions = `\n7. NO TEXT OVERLAY: Create a thumbnail with ZERO text. Focus entirely on strong visual storytelling, imagery, and visual elements. Do NOT include any text, letters, numbers, or written content.`;
-      console.log('🔍 DEBUG: Setting no text instructions:', textInstructions);
     } else {
       textInstructions = `\n7. NO TEXT OVERLAY: Focus on strong visual storytelling without text distractions.`;
-      console.log('🔍 DEBUG: Setting fallback no text instructions:', textInstructions);
     }
     
     // Logo/branding instructions
@@ -575,7 +550,7 @@ ${hasReferences ? 'Use the reference images as inspiration for proven successful
     const variations: GeneratedThumbnail[] = [];
 
     for (let i = 0; i < count; i++) {
-      console.log(`Generating variation ${i + 1}/${count}`);
+       (`Generating variation ${i + 1}/${count}`);
       
       // Modify the prompt slightly for each variation
       const modifiedAnswers = this.createVariation(userAnswers, i);
@@ -651,7 +626,7 @@ ${hasReferences ? 'Use the reference images as inspiration for proven successful
       
       if (now - stats.mtime.getTime() > maxAge) {
         fs.unlinkSync(filePath);
-        console.log(`Cleaned up old thumbnail: ${file}`);
+         (`Cleaned up old thumbnail: ${file}`);
       }
     }
   }

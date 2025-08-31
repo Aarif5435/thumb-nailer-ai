@@ -80,11 +80,6 @@ export function QuestionForm({ questions, answers, onAnswersChange, onComplete, 
   const canProceed = !currentQ?.required || currentAnswer;
   const progress = ((currentQuestion + 1) / currentQuestions.length) * 100;
 
-  // Debug: Log current question structure
-  console.log('Current question:', currentQ);
-  console.log('Question type:', currentQ?.type);
-  console.log('Question options:', currentQ?.options);
-
   return (
     <div className="max-w-3xl mx-auto">
       {/* Enhanced Progress Bar */}

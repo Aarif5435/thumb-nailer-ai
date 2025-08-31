@@ -148,7 +148,7 @@ export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating }: 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                onLoad={() => console.log('Image displayed successfully')}
+                onLoad={() =>  ('Image displayed successfully')}
               />
             )}
 

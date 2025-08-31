@@ -409,7 +409,6 @@ Make each question contextual to "${topic}" and relevant to YouTube thumbnail cr
             required: q.required !== false
           }));
           
-          console.log('AI Generated Questions:', validatedQuestions);
           return validatedQuestions;
         }
         

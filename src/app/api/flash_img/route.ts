@@ -22,7 +22,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { userAnswers, userImage, variations } = GenerateRequestSchema.parse(body);
 
-    console.log('Generating thumbnail for topic:', userAnswers.topic);
 
     // Generate thumbnail(s) using YouTube API for references
     if (variations === 1) {

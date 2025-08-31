@@ -53,7 +53,7 @@ export class YouTubeScraper {
 
     try {
       for (const query of queries.slice(0, 3)) { // Limit queries to avoid API limits
-        console.log(`Scraping thumbnails for query: ${query}`);
+         (`Scraping thumbnails for query: ${query}`);
         
         const response = await youtube.search.list({
           part: ['snippet'],
@@ -255,12 +255,12 @@ export class YouTubeScraper {
     const results: Record<string, ThumbnailData[]> = {};
     
     for (const category of config.scraping.categories) {
-      console.log(`\nScraping ${category} category...`);
+       (`\nScraping ${category} category...`);
       results[category] = await this.scrapeThumbnails(
         category as keyof typeof this.searchQueries,
         config.scraping.maxVideosPerCategory
       );
-      console.log(`Scraped ${results[category].length} thumbnails for ${category}`);
+       (`Scraped ${results[category].length} thumbnails for ${category}`);
       
       // Add delay between categories
       await new Promise(resolve => setTimeout(resolve, 2000));

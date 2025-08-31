@@ -113,11 +113,7 @@ function HomeContent() {
       stylePreference: answers.stylePreference || 'modern',
       additionalAnswers: answers
     };
-    
-    console.log('🔍 DEBUG: Sending userAnswers to API:', userAnswersData);
-    console.log('🔍 DEBUG: Custom text value:', answers.customText);
-    console.log('🔍 DEBUG: Text overlay choice:', answers.thumbnailText);
-    console.log('🔍 DEBUG: Full answers object:', answers);
+  
     
     try {
       const response = await fetch('/api/flash_img', {

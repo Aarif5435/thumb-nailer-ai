@@ -3,7 +3,6 @@ import { vectorDB } from "@/lib/qdrant";
 
 export async function POST() {
   try {
-    console.log("Initializing vector database...");
     await vectorDB.initializeCollection();
     
     const info = await vectorDB.getCollectionInfo();

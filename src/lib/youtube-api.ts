@@ -41,7 +41,6 @@ export class YouTubeAPIService {
       url.searchParams.set('videoDefinition', 'high'); // High quality videos likely have better thumbnails
       url.searchParams.set('key', this.apiKey);
 
-      console.log('Fetching YouTube thumbnails for topic:', topic);
       
       const response = await fetch(url.toString());
       
@@ -52,7 +51,6 @@ export class YouTubeAPIService {
       const data = await response.json();
       
       if (!data.items || data.items.length === 0) {
-        console.log('No YouTube results found for topic:', topic);
         return [];
       }
 
@@ -86,7 +84,7 @@ export class YouTubeAPIService {
         )
         .slice(0, maxResults);
 
-      console.log(`Found ${thumbnails.length} reference thumbnails for topic: ${topic}`);
+       (`Found ${thumbnails.length} reference thumbnails for topic: ${topic}`);
       
       return thumbnails;
     } catch (error) {
