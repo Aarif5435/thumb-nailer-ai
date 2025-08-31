@@ -168,6 +168,11 @@ CRITICAL REQUIREMENTS:
 - If NO text is requested: Do NOT include ANY text, letters, numbers, or written content
 - Ensure any text is clearly visible with minimum 60px font size
 - Position text strategically for maximum impact
+
+DESIGN INTEGRATION:
+- Text must integrate seamlessly with the thumbnail's overall design theme
+- Font styles, colors, and effects should complement the thumbnail's aesthetic
+- Text should enhance the visual impact, not distract from it
 - Use colors and styles that match the reference thumbnails
 - Create a thumbnail that would get high CTR (Click-Through Rate)
 - Make it visually striking and professional
@@ -196,7 +201,15 @@ Style Preference: ${userAnswers.stylePreference}
 - Do NOT add any other text, words, or written content
 - Ensure text is clearly visible and readable
 - Use appropriate font size (minimum 60px)
-- Position text strategically for maximum impact`;
+- Position text strategically for maximum impact
+
+TEXT STYLING REQUIREMENTS:
+- Text style must complement and enhance the overall thumbnail theme
+- Font choice should match the thumbnail's mood and aesthetic
+- Text colors should harmonize with the thumbnail's color palette
+- Text effects (shadows, outlines, etc.) should enhance visual appeal
+- Ensure text integrates seamlessly with the thumbnail design
+- Text should look like it belongs to the thumbnail, not pasted on top`;
     } else if (textOverlay === "Custom text (I'll specify)" && customText) {
       textInstructions = `CRITICAL TEXT REQUIREMENTS:
 - User has provided custom text: "${customText}"
@@ -205,7 +218,15 @@ Style Preference: ${userAnswers.stylePreference}
 - Do NOT use placeholder text like "Custom text (I'll specify)"
 - Ensure text is clearly visible and readable
 - Use appropriate font size (minimum 60px)
-- Position text strategically for maximum impact`;
+- Position text strategically for maximum impact
+
+TEXT STYLING REQUIREMENTS:
+- Text style must complement and enhance the overall thumbnail theme
+- Font choice should match the thumbnail's mood and aesthetic
+- Text colors should harmonize with the thumbnail's color palette
+- Text effects (shadows, outlines, etc.) should enhance visual appeal
+- Ensure text integrates seamlessly with the thumbnail design
+- Text should look like it belongs to the thumbnail, not pasted on top`;
     } else if (textOverlay === 'No text needed') {
       textInstructions = `CRITICAL TEXT REQUIREMENTS:
 - User has explicitly requested NO TEXT on the thumbnail
@@ -263,7 +284,13 @@ TECHNICAL REQUIREMENTS:
     return `REFERENCE THUMBNAIL ANALYSIS:
 ${analysis}
 
-Use these references to understand successful design patterns and apply similar principles to your creation.`;
+Use these references to understand successful design patterns and apply similar principles to your creation.
+
+TEXT INTEGRATION EXAMPLES:
+- Study how text colors complement the background and main elements
+- Note how font styles match the overall mood and theme
+- Observe text positioning that enhances rather than blocks key visual elements
+- Learn from successful text effects (shadows, outlines, gradients) that integrate with the design`;
   }
 
   private extractColorsFromYouTubeReferences(referenceThumbnails: YouTubeThumbnail[]): string[] {

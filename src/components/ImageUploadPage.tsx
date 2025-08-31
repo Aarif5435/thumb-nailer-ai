@@ -11,6 +11,7 @@ interface ImageUploadPageProps {
   onContinue: () => void;
   onBack: () => void;
   topic: string;
+  loadingQuestions: boolean;
   isLoading?: boolean;
 }
 
@@ -20,6 +21,7 @@ export function ImageUploadPage({
   onContinue, 
   onBack,
   topic,
+  loadingQuestions,
   isLoading = false
 }: ImageUploadPageProps) {
   const { isDark } = useTheme();
@@ -94,12 +96,12 @@ export function ImageUploadPage({
           >
             <motion.button
               onClick={onContinue}
-              disabled={isLoading}
+              disabled={loadingQuestions}
               className="px-12 py-6 bg-gradient-to-r from-orange-500 to-red-500 text-white font-black text-xl rounded-3xl shadow-2xl overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
-              whileHover={!isLoading ? { scale: 1.05, y: -3 } : {}}
-              whileTap={!isLoading ? { scale: 0.95 } : {}}
+              whileHover={!loadingQuestions ? { scale: 1.05, y: -3 } : {}}
+              whileTap={!loadingQuestions ? { scale: 0.95 } : {}}
             >
-              {isLoading ? (
+              {loadingQuestions ? (
                 <div className="flex items-center justify-center">
                   <motion.div
                     animate={{ rotate: 360 }}

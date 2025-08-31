@@ -33,6 +33,7 @@ function HomeContent() {
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   const [result, setResult] = useState<ThumbnailData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   const navigateTo = (page: 'home' | 'topic' | 'image' | 'questions' | 'result') => {
     setCurrentPage(page);
@@ -80,6 +81,7 @@ function HomeContent() {
   }
 
   const fetchQuestions = async (topicText: string) => {
+    setLoadingQuestions(true);
     try {
       const response = await fetch('/api/questions', {
         method: 'POST',
@@ -96,6 +98,7 @@ function HomeContent() {
     } catch (error) {
       console.error('Error fetching questions:', error);
     }
+    setLoadingQuestions(false);
   };
 
   const generateThumbnail = async () => {
@@ -160,6 +163,7 @@ function HomeContent() {
             userImage={userImage}
             setUserImage={setUserImage}
             onContinue={() => fetchQuestions(topic)}
+            loadingQuestions={loadingQuestions}
             onBack={() => navigateTo('topic')}
             topic={topic}
             isLoading={loading}
@@ -319,6 +323,7 @@ function TopicPage({
             <motion.button
               onClick={onContinue}
               disabled={!topic.trim()}
+              // loading={true}
               className="mt-8 px-12 py-6 bg-gradient-to-r from-red-500 to-orange-500 text-white font-black text-xl rounded-3xl shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
               whileHover={{ scale: topic.trim() ? 1.05 : 1, y: topic.trim() ? -3 : 0 }}
               whileTap={{ scale: topic.trim() ? 0.95 : 1 }}
