@@ -1,14 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Play, Sparkles, TrendingUp, Zap, Users, Award, ArrowRight, Moon, Sun } from 'lucide-react';
+import { Play, Sparkles, TrendingUp, Zap, Users, Award, ArrowRight, Moon, Sun, Lock, Clock } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ParticlesBackground } from './ParticlesBackground';
 
 interface HeroSectionProps {
   onGetStarted: () => void;
+  isAuthenticated?: boolean;
 }
 
-export function HeroSection({ onGetStarted }: HeroSectionProps) {
+export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSectionProps) {
   const { isDark, toggleTheme } = useTheme();
 
   const exampleThumbnails = [
@@ -35,225 +37,162 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
   return (
     <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${
       isDark 
-        ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-black' 
-        : 'bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50'
+        ? 'bg-gradient-to-br from-slate-900 via-orange-900/20 to-slate-900' 
+        : 'bg-gradient-to-br from-slate-50 via-orange-50/30 to-slate-100'
     }`}>
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className={`absolute top-20 left-20 w-96 h-96 rounded-full blur-3xl ${
-            isDark ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20' : 'bg-gradient-to-r from-red-400/20 to-orange-400/20'
-          }`}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className={`absolute bottom-20 right-20 w-80 h-80 rounded-full blur-3xl ${
-            isDark ? 'bg-gradient-to-r from-blue-600/20 to-cyan-600/20' : 'bg-gradient-to-r from-yellow-400/20 to-red-400/20'
-          }`}
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.4, 0.7, 0.4],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
+      {/* Particles Background */}
+      <ParticlesBackground isDark={isDark} />
+      
+      {/* Subtle Glow Effects */}
+      <div className="absolute inset-0">
+        <div className={`absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-orange-500/5' : 'bg-orange-400/3'}`} />
+        <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl ${isDark ? 'bg-orange-600/5' : 'bg-orange-500/3'}`} />
       </div>
 
-      {/* Header with Dark Mode Toggle */}
-      <header className="relative z-10 p-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <motion.div
-            className="flex items-center space-x-3"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="relative">
-              <motion.div
-                className="p-3 bg-gradient-to-r from-red-500 via-red-600 to-orange-500 rounded-2xl shadow-lg"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                animate={{
-                  boxShadow: [
-                    "0 0 20px rgba(239, 68, 68, 0.3)",
-                    "0 0 30px rgba(239, 68, 68, 0.5)",
-                    "0 0 20px rgba(239, 68, 68, 0.3)",
-                  ],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                <Play className="w-7 h-7 text-white" />
-              </motion.div>
-            </div>
-            <div>
-              <h1 className="text-xl font-black bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-                Thumb-nailer
-              </h1>
-              <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Professional Thumbnail AI
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.button
-            onClick={toggleTheme}
-            className={`p-3 rounded-2xl transition-all duration-300 ${
-              isDark 
-                ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700' 
-                : 'bg-white/80 text-gray-700 hover:bg-white'
-            } backdrop-blur-sm shadow-lg hover:shadow-xl`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </motion.button>
-        </div>
-      </header>
+      {/* DEMO VIDEO SECTION - AT THE TOP */}
+     
 
       {/* Main Hero Content */}
-      <main className="relative z-10 px-6 pt-16 pb-32">
+      <main className="relative z-10 px-6 py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Column - Text Content */}
-            <div className="space-y-8">
+          <div className="text-center space-y-12">
+            
+            {/* Hero Content */}
+            <div className="max-w-4xl mx-auto space-y-8">
               {/* Badge */}
               <motion.div
-                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-full"
+                className={`inline-flex items-center px-4 py-2 rounded-full ${
+                  isDark 
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' 
+                    : 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
+                } shadow-lg backdrop-blur-sm`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <Sparkles className="w-4 h-4 text-red-500 mr-2" />
-                <span className={`text-sm font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-                  AI-Powered Thumbnail Generator
+                <Sparkles className="w-4 h-4 mr-2" />
+                <span className="font-medium text-sm">
+                  AI-Powered
                 </span>
               </motion.div>
 
               {/* Main Title */}
               <motion.h1
-                className="text-6xl md:text-7xl lg:text-8xl font-black leading-tight"
+                className="text-5xl md:text-7xl lg:text-8xl font-black leading-tight"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.8 }}
               >
-                <span className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
+                <span className={isDark ? 'text-white' : 'text-slate-900'}>
                   Create Viral
                 </span>
                 <br />
-                <span className={`${isDark ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-red-400' : 'bg-gradient-to-r from-purple-600 via-pink-600 to-red-600'} bg-clip-text text-transparent`}>
+                <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
                   YouTube Thumbnails
                 </span>
               </motion.h1>
 
               {/* Subtitle */}
               <motion.p
-                className={`text-xl md:text-2xl max-w-2xl leading-relaxed ${
-                  isDark ? 'text-gray-300' : 'text-gray-700'
+                className={`text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed font-medium ${
+                  isDark ? 'text-slate-300' : 'text-slate-600'
                 }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
-                🚀 <span className="font-bold text-red-500">Boost your CTR by 300%</span> with AI-powered thumbnails that 
-                <span className="font-bold text-orange-500"> stop the scroll</span> and 
-                <span className="font-bold text-purple-500"> force clicks</span>. 
-                Professional results in 30 seconds!
+                Transform your content with AI that generates 
+                <span className="font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent"> click-worthy thumbnails</span> in seconds. 
+                Join 100,000+ creators boosting their views.
               </motion.p>
 
               {/* Stats */}
               <motion.div
-                className="flex flex-wrap gap-6"
+                className="flex flex-wrap justify-center gap-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.6 }}
               >
                 {[
-                  { icon: TrendingUp, label: '300% CTR Boost', color: 'from-green-500 to-emerald-600' },
-                  { icon: Zap, label: '30 Second Magic', color: 'from-yellow-500 to-orange-600' },
-                  { icon: Users, label: '1M+ Creators', color: 'from-purple-500 to-pink-600' },
-                  { icon: Award, label: 'AI Powered', color: 'from-blue-500 to-cyan-600' },
+                  { icon: TrendingUp, label: '300% CTR Boost', value: '300%' },
+                  { icon: Zap, label: '30 Second Generation', value: '30s' },
+                  { icon: Users, label: 'Active Creators', value: '100K+' },
+                  { icon: Award, label: 'Success Rate', value: '98%' },
                 ].map((stat, index) => (
                   <motion.div
                     key={stat.label}
-                    className={`flex items-center space-x-2 px-4 py-3 rounded-2xl ${
-                      isDark ? 'bg-white/5 backdrop-blur-sm border border-white/10' : 'bg-white/80 backdrop-blur-sm border border-white/50'
+                    className={`text-center rounded-xl px-4 py-3 shadow-lg backdrop-blur-sm ${
+                      isDark 
+                        ? 'bg-slate-800/80 text-white border border-slate-700/50' 
+                        : 'bg-white/90 text-slate-900 border border-slate-200/50'
                     }`}
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
                     whileHover={{ scale: 1.05, y: -2 }}
                   >
-                    <div className={`p-2 bg-gradient-to-r ${stat.color} rounded-xl`}>
-                      <stat.icon className="w-4 h-4 text-white" />
-                    </div>
-                    <span className={`font-semibold text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {stat.label}
-                    </span>
+                    <div className="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-1">{stat.value}</div>
+                    <div className="text-sm font-medium">{stat.label}</div>
                   </motion.div>
                 ))}
               </motion.div>
 
-              {/* CTA Button */}
+              {/* Main CTA Button */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.0, duration: 0.6 }}
+                className="space-y-4"
               >
                 <motion.button
                   onClick={onGetStarted}
-                  className="group relative px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-lg rounded-2xl shadow-2xl overflow-hidden"
+                  className="group px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:from-orange-600 hover:to-red-600"
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-red-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  />
-                  <span className="relative flex items-center">
-                    Get Started - It's Free
+                  <span className="flex items-center justify-center">
+                    <Play className="w-5 h-5 mr-2" />
+                    {isAuthenticated ? 'Create My First Thumbnail' : 'Get Started'}
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </motion.button>
+                
+                <p className={`text-sm ${
+                  isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}>
+                  No credit card required • Generate unlimited thumbnails
+                </p>
+
+                {/* Login Prompt for Non-Authenticated Users */}
+                
               </motion.div>
             </div>
 
-            {/* Right Column - Example Thumbnails */}
-            <div className="space-y-8">
-              <motion.h3
-                className={`text-2xl font-bold text-center ${isDark ? 'text-white' : 'text-gray-800'}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.6 }}
-              >
-                Created with Thumb-nailer ✨
-              </motion.h3>
-
-              <div className="grid gap-6">
+            {/* Example Gallery */}
+            <motion.div
+              className="mt-16"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.2, duration: 0.8 }}
+            >
+              <h3 className={`text-2xl font-bold mb-8 ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
+                Trusted by creators worldwide ✨
+              </h3>
+              
+              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
                 {exampleThumbnails.map((example, index) => (
                   <motion.div
                     key={index}
-                    className={`group relative overflow-hidden rounded-2xl ${
-                      isDark ? 'bg-gray-800/50 border border-gray-700/50' : 'bg-white/80 border border-white/50'
-                    } backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300`}
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1.0 + index * 0.2, duration: 0.6 }}
+                    className={`group relative overflow-hidden rounded-2xl backdrop-blur-sm border shadow-xl hover:shadow-2xl transition-all duration-300 ${
+                      isDark 
+                        ? 'bg-slate-800/60 border-slate-600/50' 
+                        : 'bg-white/80 border-slate-200/50'
+                    }`}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4 + index * 0.2, duration: 0.6 }}
                     whileHover={{ scale: 1.02, y: -5 }}
                   >
                     <div className="aspect-video relative overflow-hidden rounded-t-2xl">
@@ -269,7 +208,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                         className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
                         whileHover={{ scale: 1.1 }}
                       >
-                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl">
+                        <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-2xl">
                           <Play className="w-6 h-6 text-white ml-1" />
                         </div>
                       </motion.div>
@@ -281,14 +220,18 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                     </div>
 
                     <div className="p-4">
-                      <h4 className={`font-bold text-lg mb-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                      <h4 className={`font-bold text-lg mb-2 ${
+                        isDark ? 'text-white' : 'text-slate-900'
+                      }`}>
                         {example.title}
                       </h4>
                       <div className="flex justify-between items-center">
-                        <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <span className={`text-sm ${
+                          isDark ? 'text-white/70' : 'text-slate-600'
+                        }`}>
                           {example.views} views
                         </span>
-                        <span className="text-sm font-bold text-green-500">
+                        <span className="text-sm font-bold text-orange-600">
                           {example.ctr} CTR
                         </span>
                       </div>
@@ -296,10 +239,11 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </main>
+
     </div>
   );
 }

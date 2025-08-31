@@ -14,6 +14,7 @@
 /public/uploads/
 /public/videos/
 /public/thumbnails/
+/temp/
 
 # testing
 /coverage
@@ -37,6 +38,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.local
+.env.example
 
 # vercel
 .vercel

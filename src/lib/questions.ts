@@ -1,4 +1,6 @@
 import { Question, UserAnswers } from './types';
+import OpenAI from 'openai';
+import { config } from './config';
 
 // Base questions that are always asked
 const baseQuestions: Question[] = [
@@ -296,7 +298,133 @@ export class QuestionSystem {
     return ['Personal brand logo', 'Channel logo', 'Topic-related icon', 'Minimalist brand mark', 'No logo'];
   }
 
-  getQuestionsForTopic(topic: string): Question[] {
+  async getQuestionsForTopic(topic: string): Promise<Question[]> {
+    try {
+      // Use GPT-4o-mini for topic-specific questions
+      const openai = new OpenAI({
+        apiKey: config.openai.apiKey,
+      });
+
+      const prompt = `Generate exactly 5 engaging questions to help create a YouTube thumbnail for the topic: "${topic}".
+
+The questions should be:
+1. Relevant to the specific topic and content type
+2. Help understand the target audience and their interests
+3. Determine the visual style, mood, and emotional appeal
+4. Identify key visual elements and symbols to include
+5. Understand text and branding preferences
+
+IMPORTANT: Make the questions highly specific to "${topic}". For example:
+- If it's a cooking video, ask about food styling, kitchen aesthetics, etc.
+- If it's a tech tutorial, ask about software, devices, coding themes, etc.
+- If it's a fitness video, ask about workout style, equipment, motivation, etc.
+- If it's a gaming video, ask about game genre, visual effects, gaming culture, etc.
+
+CRITICAL: Each question must have the correct "type" field:
+- Use "single" for multiple choice questions with options
+- Use "text" for open-ended questions that need text input
+
+MANDATORY: Include this question about text:
+{
+  "id": "thumbnailText",
+  "question": "What text should appear on your thumbnail?",
+  "type": "single",
+  "options": ["Auto-generate from topic", "Custom text (I'll specify)", "No text needed"],
+  "required": true
+}
+
+Generate exactly 5 questions total in this format:
+{
+  "questions": [
+    {
+      "id": "targetAudience",
+      "question": "Who is your target audience for this ${topic} video?",
+      "type": "single",
+      "options": ["Beginners", "Intermediate", "Advanced", "General audience"],
+      "required": true
+    },
+    {
+      "id": "contentType",
+      "question": "What type of content is this ${topic} video?",
+      "type": "single",
+      "options": ["Tutorial/How-to", "Review/Analysis", "Entertainment", "Educational", "Product Showcase"],
+      "required": true
+    },
+    {
+      "id": "emotion",
+      "question": "What emotion should your thumbnail convey?",
+      "type": "single",
+      "options": ["Excitement", "Curiosity", "Trust", "Fun", "Professional"],
+      "required": true
+    },
+    {
+      "id": "keyElements",
+      "question": "What specific elements from ${topic} should be featured in the thumbnail?",
+      "type": "text",
+      "required": true
+    },
+    {
+      "id": "thumbnailText",
+      "question": "What text should appear on your thumbnail?",
+      "type": "single",
+      "options": ["Auto-generate from topic", "Custom text (I'll specify)", "No text needed"],
+      "required": true
+    }
+  ]
+}
+
+Make each question contextual to "${topic}" and relevant to YouTube thumbnail creation.`;
+
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert YouTube thumbnail designer. Generate contextual questions based on the topic.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        return this.getFallbackQuestions(topic);
+      }
+
+      try {
+        const parsed = JSON.parse(content);
+        
+        // Validate the questions structure
+        if (parsed.questions && Array.isArray(parsed.questions)) {
+          const validatedQuestions = parsed.questions.map((q: any) => ({
+            id: q.id || `question_${Math.random()}`,
+            question: q.question || 'Please answer this question',
+            type: q.type === 'text' ? 'text' : 'single',
+            options: q.options || ['Option 1', 'Option 2', 'Option 3'],
+            required: q.required !== false
+          }));
+          
+          console.log('AI Generated Questions:', validatedQuestions);
+          return validatedQuestions;
+        }
+        
+        return this.getFallbackQuestions(topic);
+      } catch (parseError) {
+        console.error('Error parsing AI response:', parseError);
+        return this.getFallbackQuestions(topic);
+      }
+    } catch (error) {
+      console.error('Error getting AI questions:', error);
+      return this.getFallbackQuestions(topic);
+    }
+  }
+
+  private getFallbackQuestions(topic: string): Question[] {
     const category = this.detectCategory(topic);
     
     // Create exactly 5 questions

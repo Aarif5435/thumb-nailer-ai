@@ -43,6 +43,21 @@ export interface GeneratedThumbnail {
     style: string;
     colors: string[];
     elements: string[];
+    // Enhanced metadata for CTR analysis
+    targetAudience?: string;
+    emotion?: string;
+    contentType?: string;
+    keyElements?: string;
+    stylePreference?: string;
+    generationTimestamp?: string;
+    aspectRatio?: string;
+    dimensions?: string;
+    colorCount?: number;
+    elementCount?: number;
+    hasText?: boolean;
+    hasLogo?: boolean;
+    referenceCount?: number;
+    averageReferenceScore?: number;
   };
 }
 

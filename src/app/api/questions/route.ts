@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { topic } = QuestionRequestSchema.parse(body);
 
-    const questions = questionSystem.getQuestionsForTopic(topic);
+    const questions = await questionSystem.getQuestionsForTopic(topic);
     const category = questionSystem.detectCategory(topic);
 
     return NextResponse.json({
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
   // Return sample questions for testing
-  const sampleQuestions = questionSystem.getQuestionsForTopic("React tutorial for beginners");
+  const sampleQuestions = await questionSystem.getQuestionsForTopic("React tutorial for beginners");
   
   return NextResponse.json({
     questions: sampleQuestions,

@@ -27,7 +27,7 @@ export function QuestionForm({ questions, answers, onAnswersChange, onComplete, 
     const baseQuestions = [...questions];
     
     // Add conditional custom text question if user selected custom text
-    if (answers.textOverlay === "Custom text (I'll specify)") {
+    if (answers.thumbnailText === "Custom text (I'll specify)") {
       const customTextQuestion: Question = {
         id: 'customText',
         question: 'What text should appear on your thumbnail?',
@@ -36,7 +36,7 @@ export function QuestionForm({ questions, answers, onAnswersChange, onComplete, 
       };
       
       // Insert after text overlay question
-      const textOverlayIndex = baseQuestions.findIndex(q => q.id === 'textOverlay');
+      const textOverlayIndex = baseQuestions.findIndex(q => q.id === 'thumbnailText');
       if (textOverlayIndex !== -1) {
         baseQuestions.splice(textOverlayIndex + 1, 0, customTextQuestion);
       }
@@ -79,6 +79,11 @@ export function QuestionForm({ questions, answers, onAnswersChange, onComplete, 
   const currentAnswer = answers[currentQ?.id];
   const canProceed = !currentQ?.required || currentAnswer;
   const progress = ((currentQuestion + 1) / currentQuestions.length) * 100;
+
+  // Debug: Log current question structure
+  console.log('Current question:', currentQ);
+  console.log('Question type:', currentQ?.type);
+  console.log('Question options:', currentQ?.options);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -205,19 +210,19 @@ export function QuestionForm({ questions, answers, onAnswersChange, onComplete, 
                       
                       <div className="relative flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-                            currentAnswer === option
-                              ? 'border-blue-500 bg-blue-500'
-                              : 'border-gray-300 group-hover:border-blue-400'
-                          }`}>
-                            {currentAnswer === option && (
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="w-3 h-3 bg-white rounded-full"
-                              />
-                            )}
-                          </div>
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                        currentAnswer === option
+                          ? 'border-orange-500 bg-orange-500'
+                          : 'border-gray-300 group-hover:border-orange-400'
+                      }`}>
+                        {currentAnswer === option && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-3 h-3 bg-white rounded-full"
+                          />
+                        )}
+                      </div>
                           <span className="font-medium text-lg leading-relaxed">{option}</span>
                         </div>
                         
@@ -225,7 +230,7 @@ export function QuestionForm({ questions, answers, onAnswersChange, onComplete, 
                           <motion.div
                             initial={{ scale: 0, rotate: -180 }}
                             animate={{ scale: 1, rotate: 0 }}
-                            className="text-blue-500"
+                            className="text-orange-500"
                           >
                             <CheckCircle className="w-6 h-6" />
                           </motion.div>
@@ -247,11 +252,53 @@ export function QuestionForm({ questions, answers, onAnswersChange, onComplete, 
                     value={currentAnswer || ''}
                     onChange={(e) => handleAnswer(currentQ.id, e.target.value)}
                     placeholder="Share your thoughts here..."
+                    className="w-full p-6 border-2 border-gray-200/50 rounded-2xl focus:border-orange-500 focus:outline-none resize-none bg-white/80 backdrop-blur-sm text-lg leading-relaxed transition-all duration-300 focus:shadow-lg text-black"
+                    rows={4}
+                  />
+                  <div className="absolute bottom-4 right-4 text-sm text-gray-400">
+                    {(currentAnswer || '').length} characters
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Fallback for questions without proper type */}
+              {(!currentQ?.type || (currentQ?.type !== 'single' && currentQ?.type !== 'text')) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                  className="relative"
+                >
+                  <textarea
+                    value={currentAnswer || ''}
+                    onChange={(e) => handleAnswer(currentQ.id, e.target.value)}
+                    placeholder="Please type your answer here..."
                     className="w-full p-6 border-2 border-gray-200/50 rounded-2xl focus:border-blue-500 focus:outline-none resize-none bg-white/80 backdrop-blur-sm text-lg leading-relaxed transition-all duration-300 focus:shadow-lg"
                     rows={4}
                   />
                   <div className="absolute bottom-4 right-4 text-sm text-gray-400">
                     {(currentAnswer || '').length} characters
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Custom text input for thumbnail text question */}
+              {currentQ?.id === 'thumbnailText' && currentAnswer === 'Custom text (I\'ll specify)' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                  className="relative mt-4"
+                >
+                  <textarea
+                    value={answers.customText || ''}
+                    onChange={(e) => onAnswersChange({ ...answers, customText: e.target.value })}
+                    placeholder="Type your custom text here (e.g., 'HOW TO MASTER REACT', 'BEST WORKOUT EVER')"
+                    className="w-full p-6 border-2 border-orange-200/50 rounded-2xl focus:border-orange-500 focus:outline-none resize-none bg-orange-50/80 backdrop-blur-sm text-lg leading-relaxed transition-all duration-300 focus:shadow-lg text-black"
+                    rows={3}
+                  />
+                  <div className="absolute bottom-4 right-4 text-sm text-orange-400">
+                    {(answers.customText || '').length} characters
                   </div>
                 </motion.div>
               )}

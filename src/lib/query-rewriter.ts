@@ -141,7 +141,7 @@ Output: "beginner-friendly react javascript tutorial coding professional clean l
     youtubeThumbnails: any[]
   ): Promise<string> {
     try {
-      const prompt = `Create a detailed prompt for generating a YouTube thumbnail based on:
+      const prompt = `Create a detailed prompt for generating a HIGH-CTR YouTube thumbnail based on:
 
 User Request:
 - Topic: "${userAnswers.topic}"
@@ -157,14 +157,30 @@ ${youtubeThumbnails.slice(0, 3).map((thumb, i) => {
   return `${i + 1}. "${thumb.title}" by ${thumb.channelTitle} (${views} views) - Published: ${new Date(thumb.publishedAt).toLocaleDateString()}`;
 }).join('\n')}
 
-Generate a detailed prompt for Gemini 2.5 Flash Image Preview that will create an eye-catching YouTube thumbnail. Include specific details about:
-- Layout and composition
-- Colors and visual style
-- Text placement and typography
-- Visual elements and graphics
-- Overall mood and atmosphere
+IMPORTANT: These reference thumbnails will be provided as visual data to the AI. Instruct the AI to:
+- Analyze the reference images visually for color schemes, text styles, and layout patterns
+- Extract successful design elements from these high-performing thumbnails
+- Use the visual information to inform design decisions
+- Apply proven patterns while creating something unique
 
-Make it optimized for high click-through rates.`;
+Generate a detailed prompt for Gemini 2.5 Flash Image Preview that will create a VIRAL YouTube thumbnail. Focus on:
+
+VISUAL IMPACT:
+- Layout: Main subject takes 60-70% of frame, supporting elements 30-40%
+- Composition: Use rule of thirds, leading lines, and visual hierarchy
+- Colors: High contrast, vibrant colors that pop on YouTube (avoid black backgrounds)
+
+TEXT OPTIMIZATION:
+- Text placement: Main text in upper 1/3, subtitle in middle area
+- Typography: Large, bold fonts with strong outlines and drop shadows
+- Readability: Must be clear at 320x180px (mobile size)
+
+EMOTIONAL APPEAL:
+- Mood: Create ${userAnswers.emotion.toLowerCase()} atmosphere that matches target audience
+- Visual storytelling: Use imagery that creates curiosity and intrigue
+- Professional quality: Suitable for successful YouTube channels
+
+Reference the successful thumbnails for proven design patterns while creating something unique and eye-catching.`;
 
       const response = await openai.chat.completions.create({
         model: 'gpt-4o',
@@ -190,26 +206,39 @@ Make it optimized for high click-through rates.`;
   }
 
   private buildFallbackThumbnailPrompt(userAnswers: UserAnswers): string {
-    const { topic, targetAudience, emotion, keyElements, stylePreference } = userAnswers;
-    
-    return `Create a high-quality YouTube thumbnail for "${topic}".
+  const { topic, targetAudience, emotion, keyElements, stylePreference } = userAnswers;
+  
+  return `Create a HIGH-CTR YouTube thumbnail for "${topic}".
+
+Note: Reference thumbnails from successful YouTube videos will be provided as visual data. Use these to inform your design decisions while creating something unique.
 
 Style: ${stylePreference} design with ${emotion.toLowerCase()} mood
 Target Audience: ${targetAudience}
 Main Focus: ${keyElements}
 
-Visual Requirements:
-- 16:9 aspect ratio (1280x720px)
-- High contrast for visibility
-- Large, readable text (max 4-6 words)
-- Eye-catching colors
-- Professional quality
-- Clear focal point
-- Optimized for small display sizes
+VISUAL REQUIREMENTS:
+- 16:9 aspect ratio (1280x720px) - EXACTLY
+- High contrast for maximum visibility on YouTube
+- Large, readable text (minimum 60px font size)
+- Eye-catching colors that pop against YouTube's white background
+- Professional quality suitable for successful channels
+- Clear focal point with main subject taking 60-70% of frame
+- Optimized for mobile viewing (320x180px)
 
-Text should be bold, sans-serif font with strong outline/shadow for readability.
-Use vibrant, contrasting colors that stand out in YouTube's interface.
-Ensure the main subject/element is prominently displayed and easily recognizable.`;
+TEXT QUALITY:
+- Use ONLY the exact text provided by the system
+- Bold, sans-serif font (Arial Black, Impact, or similar)
+- Strong outline/shadow for maximum readability
+- Strategic positioning: main text in upper 1/3, subtitle in middle
+- NO grammatical errors or awkward phrasing
+
+COLOR & STYLE:
+- Vibrant, contrasting colors that stand out
+- Avoid black backgrounds - use bright, colorful backgrounds
+- Emotional impact that matches the target emotion
+- Visual storytelling that creates curiosity and intrigue
+
+Ensure the main subject/element is prominently displayed and easily recognizable at all sizes.`;
   }
 
   async rewriteMultipleQueries(userAnswers: UserAnswers): Promise<string[]> {
