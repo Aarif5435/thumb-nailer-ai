@@ -25,6 +25,12 @@ export class ThumbnailGenerator {
       // Generate optimized prompt
       const prompt = await this.buildComprehensivePrompt(userAnswers, referenceThumbnails, 'Reference thumbnails available', userImage);
       
+      // Debug: Log what text instructions are being sent
+      console.log('🔍 Text Instructions for LLM:');
+      console.log('Text Overlay Choice:', userAnswers.additionalAnswers?.thumbnailText);
+      console.log('Custom Text:', userAnswers.additionalAnswers?.customText);
+      console.log('Generated Prompt:', prompt.substring(0, 500) + '...');
+      
       // Prepare content for Gemini with reference images
       const contents: any[] = [{ text: prompt }];
       
@@ -157,9 +163,10 @@ ${referenceAnalysis}
 CRITICAL REQUIREMENTS:
 - Generate a YouTube thumbnail with EXACTLY 16:9 aspect ratio (1280x720px)
 - NO cropping of the image - ensure full content is visible
-- If user requested text, use the EXACT text provided by the system instructions
-- If no text requested, do NOT include any text on the thumbnail
-- Ensure text is clearly visible with minimum 60px font size
+- TEXT POLICY: Follow the system instructions EXACTLY for text handling
+- If text is requested: Use ONLY the specified text, no additional words
+- If NO text is requested: Do NOT include ANY text, letters, numbers, or written content
+- Ensure any text is clearly visible with minimum 60px font size
 - Position text strategically for maximum impact
 - Use colors and styles that match the reference thumbnails
 - Create a thumbnail that would get high CTR (Click-Through Rate)
@@ -170,37 +177,52 @@ Target Audience: ${userAnswers.targetAudience}
 Content Type: ${userAnswers.contentType}
 Emotion: ${userAnswers.emotion}
 Key Elements: ${userAnswers.keyElements}
-Style Preference: ${userAnswers.stylePreference}`;
+Style Preference: ${userAnswers.stylePreference}
+
+⚠️ FINAL REMINDER: Text handling is CRITICAL. Follow the text requirements above EXACTLY.`;
   }
 
   private buildSystemInstructions(userAnswers: UserAnswers): string {
     const textOverlay = userAnswers.additionalAnswers?.thumbnailText;
+    const customText = userAnswers.additionalAnswers?.customText;
     
     // Handle auto-generation case
     let textInstructions = '';
     if (textOverlay === 'Auto-generate from topic') {
       const autoText = this.generateAutoTextFromTopic(userAnswers.topic);
-      textInstructions = `TEXT REQUIREMENTS:
+      textInstructions = `CRITICAL TEXT REQUIREMENTS:
 - User has requested auto-generated text based on the topic
-- Use this EXACT text: "${autoText}"
+- Use this EXACT text and ONLY this text: "${autoText}"
+- Do NOT add any other text, words, or written content
 - Ensure text is clearly visible and readable
 - Use appropriate font size (minimum 60px)
 - Position text strategically for maximum impact`;
-    } else if (textOverlay && textOverlay !== 'No text needed') {
-      textInstructions = `TEXT REQUIREMENTS:
-- User has requested text on the thumbnail
-- Use this EXACT text: "${textOverlay}"
+    } else if (textOverlay === "Custom text (I'll specify)" && customText) {
+      textInstructions = `CRITICAL TEXT REQUIREMENTS:
+- User has provided custom text: "${customText}"
+- Use this EXACT text and ONLY this text: "${customText}"
+- Do NOT add any other text, words, or written content
+- Do NOT use placeholder text like "Custom text (I'll specify)"
 - Ensure text is clearly visible and readable
 - Use appropriate font size (minimum 60px)
 - Position text strategically for maximum impact`;
+    } else if (textOverlay === 'No text needed') {
+      textInstructions = `CRITICAL TEXT REQUIREMENTS:
+- User has explicitly requested NO TEXT on the thumbnail
+- Do NOT include ANY text, words, letters, numbers, or written content
+- Do NOT add any logos, brand names, or written elements
+- Focus purely on visual elements, imagery, and design
+- Create a thumbnail that communicates through visuals only`;
     } else {
-      textInstructions = `TEXT REQUIREMENTS:
+      textInstructions = `CRITICAL TEXT REQUIREMENTS:
 - User has NOT requested any text on the thumbnail
-- Do NOT include any text, logos, or written content
+- Do NOT include ANY text, words, letters, numbers, or written content
 - Focus purely on visual elements and imagery`;
     }
     
     return `You are a professional YouTube thumbnail designer. Your task is to create a high-converting thumbnail that follows these guidelines:
+
+⚠️ CRITICAL: Text handling is the MOST IMPORTANT requirement. Follow text instructions EXACTLY.
 
 ${textInstructions}
 
