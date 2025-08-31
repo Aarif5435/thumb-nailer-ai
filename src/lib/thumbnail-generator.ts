@@ -157,7 +157,7 @@ ${referenceAnalysis}
 CRITICAL REQUIREMENTS:
 - Generate a YouTube thumbnail with EXACTLY 16:9 aspect ratio (1280x720px)
 - NO cropping of the image - ensure full content is visible
-- If user requested text, use the EXACT text provided: "${userAnswers.additionalAnswers?.thumbnailText || 'No text requested'}"
+- If user requested text, use the EXACT text provided by the system instructions
 - If no text requested, do NOT include any text on the thumbnail
 - Ensure text is clearly visible with minimum 60px font size
 - Position text strategically for maximum impact
@@ -176,17 +176,33 @@ Style Preference: ${userAnswers.stylePreference}`;
   private buildSystemInstructions(userAnswers: UserAnswers): string {
     const textOverlay = userAnswers.additionalAnswers?.thumbnailText;
     
-    return `You are a professional YouTube thumbnail designer. Your task is to create a high-converting thumbnail that follows these guidelines:
-
-${textOverlay ? `TEXT REQUIREMENTS:
+    // Handle auto-generation case
+    let textInstructions = '';
+    if (textOverlay === 'Auto-generate from topic') {
+      const autoText = this.generateAutoTextFromTopic(userAnswers.topic);
+      textInstructions = `TEXT REQUIREMENTS:
+- User has requested auto-generated text based on the topic
+- Use this EXACT text: "${autoText}"
+- Ensure text is clearly visible and readable
+- Use appropriate font size (minimum 60px)
+- Position text strategically for maximum impact`;
+    } else if (textOverlay && textOverlay !== 'No text needed') {
+      textInstructions = `TEXT REQUIREMENTS:
 - User has requested text on the thumbnail
 - Use this EXACT text: "${textOverlay}"
 - Ensure text is clearly visible and readable
 - Use appropriate font size (minimum 60px)
-- Position text strategically for maximum impact` : `TEXT REQUIREMENTS:
+- Position text strategically for maximum impact`;
+    } else {
+      textInstructions = `TEXT REQUIREMENTS:
 - User has NOT requested any text on the thumbnail
 - Do NOT include any text, logos, or written content
-- Focus purely on visual elements and imagery`}
+- Focus purely on visual elements and imagery`;
+    }
+    
+    return `You are a professional YouTube thumbnail designer. Your task is to create a high-converting thumbnail that follows these guidelines:
+
+${textInstructions}
 
 DESIGN PRINCIPLES:
 - Create a thumbnail that would get high CTR (Click-Through Rate)
@@ -272,6 +288,64 @@ Use these references to understand successful design patterns and apply similar 
     if (averageViews > 50000) return 65;   // 50K+ views
     if (averageViews > 10000) return 55;   // 10K+ views
     return 45; // Less than 10K views
+  }
+
+  private generateAutoTextFromTopic(topic: string): string {
+    // Generate short, impactful text (2-3 words max) based on the topic
+    const topicLower = topic.toLowerCase();
+    
+    // Common YouTube text patterns based on real successful channels
+    const patterns = {
+      tutorial: ['HOW TO', 'LEARN', 'MASTER', 'BEGINNER', 'ADVANCED', 'STEP BY STEP', 'TUTORIAL'],
+      review: ['REVIEW', 'REAL TALK', 'HONEST', 'TRUTH', 'REVEALED', 'EXPOSED', 'REAL REVIEW'],
+      gaming: ['GAMEPLAY', 'HIGHLIGHTS', 'WINS', 'FAILS', 'REACTIONS', 'MOMENTS', 'BEST PLAYS'],
+      tech: ['NEW', 'BREAKING', 'REVEALED', 'TESTING', 'COMPARISON', 'REVIEW', 'LATEST'],
+      fitness: ['WORKOUT', 'TRANSFORMATION', 'RESULTS', 'CHALLENGE', 'TIPS', 'GUIDE', 'TRAINING'],
+      cooking: ['RECIPE', 'COOKING', 'CHEF', 'SECRETS', 'TIPS', 'HOW TO', 'MAKE'],
+      lifestyle: ['DAY IN LIFE', 'ROUTINE', 'TIPS', 'SECRETS', 'REVEALED', 'EXPOSED', 'LIFESTYLE'],
+      business: ['STRATEGY', 'SECRETS', 'METHODS', 'TIPS', 'REVEALED', 'EXPOSED', 'BUSINESS'],
+      entertainment: ['REACTION', 'REVIEW', 'OPINION', 'THOUGHTS', 'REAL TALK', 'HONEST'],
+      education: ['EXPLAINED', 'LEARN', 'UNDERSTAND', 'BREAKDOWN', 'ANALYSIS', 'GUIDE']
+    };
+    
+    // Determine category based on topic keywords
+    let category = 'general';
+    if (topicLower.includes('tutorial') || topicLower.includes('learn') || topicLower.includes('how to') || topicLower.includes('guide')) {
+      category = 'tutorial';
+    } else if (topicLower.includes('review') || topicLower.includes('opinion') || topicLower.includes('thoughts')) {
+      category = 'review';
+    } else if (topicLower.includes('game') || topicLower.includes('gaming') || topicLower.includes('play')) {
+      category = 'gaming';
+    } else if (topicLower.includes('tech') || topicLower.includes('technology') || topicLower.includes('app') || topicLower.includes('software')) {
+      category = 'tech';
+    } else if (topicLower.includes('workout') || topicLower.includes('fitness') || topicLower.includes('exercise') || topicLower.includes('training')) {
+      category = 'fitness';
+    } else if (topicLower.includes('cook') || topicLower.includes('recipe') || topicLower.includes('food') || topicLower.includes('kitchen')) {
+      category = 'cooking';
+    } else if (topicLower.includes('life') || topicLower.includes('routine') || topicLower.includes('daily') || topicLower.includes('lifestyle')) {
+      category = 'lifestyle';
+    } else if (topicLower.includes('business') || topicLower.includes('money') || topicLower.includes('entrepreneur') || topicLower.includes('startup')) {
+      category = 'business';
+    } else if (topicLower.includes('movie') || topicLower.includes('film') || topicLower.includes('show') || topicLower.includes('entertainment')) {
+      category = 'education';
+    } else if (topicLower.includes('explain') || topicLower.includes('understand') || topicLower.includes('analysis') || topicLower.includes('breakdown')) {
+      category = 'education';
+    }
+    
+    const categoryPatterns = patterns[category as keyof typeof patterns] || patterns.tutorial;
+    const mainText = categoryPatterns[Math.floor(Math.random() * categoryPatterns.length)];
+    
+    // Generate contextual subtitle based on topic (keep it short - 2-3 words max)
+    const words = topic.split(' ').slice(0, 2); // Only take first 2 words
+    let subtitle = words.join(' ').toUpperCase();
+    
+    // Ensure subtitle isn't too long
+    if (subtitle.length > 15) {
+      subtitle = words[0].toUpperCase();
+    }
+    
+    // Return short, impactful text (2-3 words max)
+    return `${mainText}\n${subtitle}`;
   }
 
   private analyzeCTROptimization(userAnswers: UserAnswers, referenceThumbnails: YouTubeThumbnail[]): {
