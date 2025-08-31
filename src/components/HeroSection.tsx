@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Sparkles, TrendingUp, Zap, Users, Award, ArrowRight, Moon, Sun, Lock, Clock, ChevronLeft, ChevronRight, X, Maximize2 } from 'lucide-react';
+import { Play, Sparkles, TrendingUp, Zap, Users, Award, ArrowRight, Moon, Sun, Lock, Clock, ChevronLeft, ChevronRight, X, Maximize2, IndianRupee } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ParticlesBackground } from './ParticlesBackground';
 import { useState, useRef } from 'react';
@@ -13,6 +13,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { PricingPlans } from './PricingPlans';
 
 interface HeroSectionProps {
   onGetStarted: () => void;
@@ -32,26 +33,6 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
 
-  const exampleThumbnails = [
-    {
-      title: "Best JavaScript Tutorial",
-      image: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=225&fit=crop",
-      views: "2.3M",
-      ctr: "12.4%"
-    },
-    {
-      title: "Amazing Cooking Recipe",
-      image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=225&fit=crop",
-      views: "1.8M",
-      ctr: "15.2%"
-    },
-    {
-      title: "Gaming Highlights",
-      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=225&fit=crop",
-      views: "3.1M",
-      ctr: "18.7%"
-    }
-  ];
 
   // Showcase thumbnails using all available generated images from public/generated
   const showcaseThumbnails = [
@@ -209,61 +190,193 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-12">
             
-            {/* Hero Content */}
-            <div className="max-w-4xl mx-auto space-y-8">
-              {/* Badge */}
+            {/* Hero Content - Only Heading and Video Side by Side */}
+            <div className="grid lg:grid-cols-2 gap-16">
+              {/* Left Side - Only Main Title */}
+              <div className="lg:pr-8 mt-12">
+                {/* Badge */}
+                <motion.div
+                  className={`inline-flex items-center px-4 py-2 rounded-full ${
+                    isDark 
+                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' 
+                      : 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
+                  } shadow-lg backdrop-blur-sm mb-6`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  <span className="font-medium text-sm">
+                    AI-Powered
+                  </span>
+                </motion.div>
+
+                {/* Main Title */}
+                <motion.h1
+                  className="text-5xl md:text-6xl lg:text-7xl font-black leading-tight"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.8 }}
+                >
+                  <span className={isDark ? 'text-white' : 'text-slate-900'}>
+                    Create Viral
+                  </span>
+                  <br />
+                  <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+                    YouTube Thumbnails
+                  </span>
+                </motion.h1>
+              </div>
+
+              {/* Right Side - Stylish Demo Video */}
               <motion.div
-                className={`inline-flex items-center px-4 py-2 rounded-full ${
-                  isDark 
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' 
-                    : 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
-                } shadow-lg backdrop-blur-sm`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                className="relative lg:w-[120%] lg:-ml-10"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                <span className="font-medium text-sm">
-                  AI-Powered
-                </span>
+                {/* Enhanced Video Container */}
+                <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-black border-2 border-orange-500/20">
+                  {/* Glowing Border Effect */}
+                  {/* <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-orange-500/20 via-red-500/20 to-orange-500/20 animate-pulse"></div> */}
+                  
+                  {/* Video Element */}
+                  <video
+                    className="w-full h-full object-cover rounded-3xl"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls={false}
+                  >
+                    <source src="/demo-video/demo.mov" type="video/mp4" />
+                    <source src="/demo-video/demo.mov" type="video/quicktime" />
+                    <source src="/demo-video/demo.mov" type="video/webm" />
+                    Your browser does not support the video tag.
+                  </video>
+                  
+                  {/* Gradient Overlay */}
+                  {/* <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-3xl"></div> */}
+                  
+                  {/* Floating Elements */}
+                  {/* <div className="absolute top-6 left-6 w-3 h-3 bg-orange-500 rounded-full animate-bounce"></div>
+                  <div className="absolute top-8 right-8 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <div className="absolute bottom-20 left-10 w-4 h-4 bg-orange-400 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div> */}
+                  
+                  {/* Center Play Icon */}
+                  {/* <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-24 h-24 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-2xl animate-pulse border-4 border-white/20">
+                      <Play className="w-10 h-10 text-white ml-1" />
+                    </div>
+                  </div> */}
+                  
+                  {/* Bottom Info Bar */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-3xl">
+                    <div className="flex items-center justify-between text-white">
+                      <div>
+                        <div className="text-sm text-orange-400 font-medium">AI Thumbnail Generator</div>
+                        <div className="text-xs text-gray-300">Creating viral thumbnails in seconds</div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-green-400">Live Demo</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Video Info Below */}
+               
               </motion.div>
+            </div>
 
-              {/* Main Title */}
-              <motion.h1
-                className="text-5xl md:text-7xl lg:text-8xl font-black leading-tight"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.8 }}
-              >
-                <span className={isDark ? 'text-white' : 'text-slate-900'}>
-                  Create Viral
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
-                  YouTube Thumbnails
-                </span>
-              </motion.h1>
-
+            {/* Content Below - Centered */}
+            <div className="max-w-4xl mx-auto text-center space-y-8">
               {/* Subtitle */}
               <motion.p
-                className={`text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed font-medium ${
+                className={`text-xl md:text-2xl leading-relaxed font-medium ${
                   isDark ? 'text-slate-300' : 'text-slate-600'
                 }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
               >
                 Transform your content with AI that generates 
                 <span className="font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent"> click-worthy thumbnails</span> in seconds. 
                 Join 100,000+ creators boosting their views.
               </motion.p>
 
+              {/* Pricing Comparison - Highlighted */}
+              <motion.div
+                className="flex flex-col items-center space-y-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+              >
+                <div className={`text-xl font-semibold ${
+                  isDark ? 'text-slate-300' : 'text-slate-700'
+                }`}>
+                  Traditional thumbnail design costs:
+                </div>
+                
+                {/* Price Comparison */}
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="flex items-center space-x-6">
+                    <div className={`text-3xl line-through ${
+                      isDark ? 'text-slate-500' : 'text-slate-400'
+                    }`}>
+                      ₹1000 per thumbnail
+                    </div>
+                    <div className="text-4xl font-bold text-green-600">
+                      →
+                    </div>
+                    <div className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+                      ₹19 per thumbnail
+                    </div>
+                  </div>
+                  
+                  {/* Centered "or" */}
+                  <div className={`text-xl font-semibold ${
+                    isDark ? 'text-slate-400' : 'text-slate-600'
+                  }`}>
+                    or
+                  </div>
+                </div>
+                
+                {/* Package Deal - Clickable */}
+                <motion.button
+                  onClick={() => {
+                    // Open paywall or pricing section
+                    const pricingSection = document.getElementById('pricing-section');
+                    if (pricingSection) {
+                      pricingSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-6 rounded-2xl shadow-xl hover:shadow-2xl transform transition-all duration-300 hover:scale-105 cursor-pointer w-full max-w-md"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl font-bold mb-2">🎉 Special Package Deal</div>
+                    <div className="text-3xl font-bold mb-2">₹59 for 3 Thumbnails</div>
+                    <div className="text-lg opacity-90">+ 5 regenerate attempts included</div>
+                    <div className="text-sm mt-2 opacity-75">Click to buy now</div>
+                  </div>
+                </motion.button>
+                
+                <div className={`text-lg font-semibold ${
+                  isDark ? 'text-slate-300' : 'text-slate-700'
+                }`}>
+                  Save ₹2,941 compared to traditional design!
+                </div>
+              </motion.div>
+
               {/* Stats */}
               <motion.div
                 className="flex flex-wrap justify-center gap-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
+                transition={{ delay: 1.0, duration: 0.6 }}
               >
                 {[
                   { icon: TrendingUp, label: '300% CTR Boost', value: '300%' },
@@ -280,7 +393,7 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
                     }`}
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
+                    transition={{ delay: 1.2 + index * 0.1, duration: 0.5 }}
                     whileHover={{ scale: 1.05, y: -2 }}
                   >
                     <div className="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-1">{stat.value}</div>
@@ -293,7 +406,7 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.0, duration: 0.6 }}
+                transition={{ delay: 1.4, duration: 0.6 }}
                 className="space-y-4"
               >
                 <motion.button
@@ -314,9 +427,6 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
                 }`}>
                   No credit card required • Generate unlimited thumbnails
                 </p>
-
-                {/* Login Prompt for Non-Authenticated Users */}
-                
               </motion.div>
             </div>
 
@@ -401,6 +511,11 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
           </div>
         </div>
       </main>
+
+      {/* Pricing Plans Section */}
+      <div id="pricing-section">
+        <PricingPlans />
+      </div>
 
       {/* Full Screen Showcase Preview Modal */}
       <AnimatePresence>
