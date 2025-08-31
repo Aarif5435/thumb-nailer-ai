@@ -10,7 +10,6 @@
 !.yarn/releases
 !.yarn/versions
 .env
-/public/generated/
 /public/uploads/
 /public/videos/
 /public/thumbnails/

@@ -1,9 +1,18 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Play, Sparkles, TrendingUp, Zap, Users, Award, ArrowRight, Moon, Sun, Lock, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Sparkles, TrendingUp, Zap, Users, Award, ArrowRight, Moon, Sun, Lock, Clock, ChevronLeft, ChevronRight, X, Maximize2 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ParticlesBackground } from './ParticlesBackground';
+import { useState, useRef } from 'react';
+import Autoplay from "embla-carousel-autoplay";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface HeroSectionProps {
   onGetStarted: () => void;
@@ -12,6 +21,16 @@ interface HeroSectionProps {
 
 export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSectionProps) {
   const { isDark, toggleTheme } = useTheme();
+  
+  // State for showcase carousel and preview
+  const [currentShowcaseSlide, setCurrentShowcaseSlide] = useState(0);
+  const [showShowcasePreview, setShowShowcasePreview] = useState(false);
+  const [selectedThumbnail, setSelectedThumbnail] = useState<typeof showcaseThumbnails[0] | null>(null);
+
+  // Autoplay plugin for carousel
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  );
 
   const exampleThumbnails = [
     {
@@ -34,8 +53,269 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
     }
   ];
 
+  // Showcase thumbnails using all available generated images from public/generated
+  const showcaseThumbnails = [
+    {
+      id: 'tech-review',
+      title: 'Advanced Tech Tutorial',
+      description: 'Professional tech review with modern design elements',
+      image: '/generated/thumbnail_a2f109fd-f5eb-4f55-a949-2153d19494af.png',
+      views: '2.1M',
+      ctr: '14.8%'
+    },
+    {
+      id: 'gaming-setup',
+      title: 'Ultimate Gaming Setup',
+      description: 'High-energy gaming content with vibrant colors',
+      image: '/generated/thumbnail_84e5b411-1042-4482-a334-2508db6c3d14.png',
+      views: '3.5M',
+      ctr: '16.2%'
+    },
+    {
+      id: 'cooking-recipe',
+      title: 'Amazing Cooking Recipe',
+      description: 'Delicious food content with warm, inviting colors',
+      image: '/generated/thumbnail_09e03894-ce0a-4c67-b1bd-384f2fe0c7e1.png',
+      views: '1.9M',
+      ctr: '13.7%'
+    },
+    {
+      id: 'travel-vlog',
+      title: 'Travel Adventures',
+      description: 'Exciting travel content with stunning landscapes',
+      image: '/generated/thumbnail_6a79e17e-fe85-46e8-bee2-5f10c5ca52fc.png',
+      views: '2.8M',
+      ctr: '17.1%'
+    },
+    {
+      id: 'fitness-motivation',
+      title: 'Fitness Transformation',
+      description: 'Motivational fitness content with high energy',
+      image: '/generated/thumbnail_47f7b1ac-9a52-4cdb-aee3-623a1d6c443b.png',
+      views: '2.3M',
+      ctr: '15.4%'
+    },
+    {
+      id: 'business-tips',
+      title: 'Business Success Secrets',
+      description: 'Professional business content with corporate style',
+      image: '/generated/thumbnail_a2708ce8-871c-4128-a627-a64321339f01.png',
+      views: '1.7M',
+      ctr: '12.9%'
+    },
+    {
+      id: 'creative-design',
+      title: 'Creative Design Masterclass',
+      description: 'Artistic content with vibrant creative elements',
+      image: '/generated/thumbnail_868bdb77-cdbb-4d31-83d4-a339796d9e89.png',
+      views: '2.4M',
+      ctr: '16.8%'
+    },
+    {
+      id: 'lifestyle-tips',
+      title: 'Lifestyle Transformation',
+      description: 'Modern lifestyle content with clean aesthetics',
+      image: '/generated/thumbnail_5d24e3a8-a4b2-4d90-b147-fa380400dba6.png',
+      views: '1.8M',
+      ctr: '13.2%'
+    },
+    {
+      id: 'music-production',
+      title: 'Music Production Secrets',
+      description: 'Dynamic music content with rhythmic elements',
+      image: '/generated/thumbnail_973cf28f-0e1f-4478-b925-37873b6ef208.png',
+      views: '2.6M',
+      ctr: '15.9%'
+    },
+    {
+      id: 'sports-highlights',
+      title: 'Epic Sports Moments',
+      description: 'High-energy sports content with action shots',
+      image: '/generated/thumbnail_e5919e8-1cdb-40f4-89fc-c2a748fd6157.png',
+      views: '3.2M',
+      ctr: '17.5%'
+    },
+    {
+      id: 'educational-content',
+      title: 'Learning Made Easy',
+      description: 'Educational content with clear visual hierarchy',
+      image: '/generated/thumbnail_cbe90707-832b-46ff-bddf-265d21ffd73e.png',
+      views: '2.0M',
+      ctr: '14.1%'
+    },
+    {
+      id: 'product-review',
+      title: 'Honest Product Review',
+      description: 'Trustworthy product review with detailed analysis',
+      image: '/generated/thumbnail_7b00727d-ce6e-46f6-aeea-841f40bb24bc.png',
+      views: '2.7M',
+      ctr: '16.3%'
+    },
+    {
+      id: 'comedy-sketch',
+      title: 'Hilarious Comedy Sketch',
+      description: 'Funny content with bright, cheerful colors',
+      image: '/generated/thumbnail_96641c78-343b-4685-b072-a086ca5d1234.png',
+      views: '3.8M',
+      ctr: '18.9%'
+    },
+    {
+      id: 'beauty-tutorial',
+      title: 'Beauty Transformation',
+      description: 'Glamorous beauty content with elegant styling',
+      image: '/generated/thumbnail_078f9aef-4e52-46b6-84e3-e950c08f8319.png',
+      views: '2.1M',
+      ctr: '15.7%'
+    },
+    {
+      id: 'automotive-review',
+      title: 'Car Review & Analysis',
+      description: 'Professional automotive content with sleek design',
+      image: '/generated/thumbnail_70b7cd39-79aa-48e7-85fe-9af032063365.png',
+      views: '1.9M',
+      ctr: '13.8%'
+    },
+    {
+      id: 'gaming-stream',
+      title: 'Epic Gaming Stream',
+      description: 'Intense gaming content with dramatic lighting',
+      image: '/generated/thumbnail_7d41b841-582a-43af-bfcd-ec51257a241b.png',
+      views: '4.1M',
+      ctr: '19.2%'
+    },
+    {
+      id: 'tech-news',
+      title: 'Breaking Tech News',
+      description: 'Latest tech updates with modern design',
+      image: '/generated/thumbnail_ca113eaf-291b-4edb-a7e7-d9faa355285b.png',
+      views: '2.9M',
+      ctr: '16.7%'
+    },
+    {
+      id: 'fitness-challenge',
+      title: '30-Day Fitness Challenge',
+      description: 'Motivational fitness challenge with progress tracking',
+      image: '/generated/thumbnail_ac04dd41-cb3f-48f6-a3d5-2f75005bcec3.png',
+      views: '3.3M',
+      ctr: '17.8%'
+    },
+    {
+      id: 'travel-guide',
+      title: 'Ultimate Travel Guide',
+      description: 'Comprehensive travel tips with stunning visuals',
+      image: '/generated/thumbnail_cef5d262-b965-474a-b7b6-3ac278f918ab.png',
+      views: '2.2M',
+      ctr: '14.9%'
+    },
+    {
+      id: 'cooking-masterclass',
+      title: 'Chef\'s Cooking Secrets',
+      description: 'Professional cooking techniques with beautiful plating',
+      image: '/generated/thumbnail_3625799f-a956-464c-a39b-cb47fcf0df5f.png',
+      views: '2.5M',
+      ctr: '16.1%'
+    },
+    {
+      id: 'business-strategy',
+      title: 'Business Growth Strategy',
+      description: 'Strategic business insights with professional layout',
+      image: '/generated/thumbnail_1bf0b351-34f5-461b-a6ed-feb98a7814f2.png',
+      views: '1.6M',
+      ctr: '12.5%'
+    },
+    {
+      id: 'art-tutorial',
+      title: 'Digital Art Masterclass',
+      description: 'Creative art techniques with vibrant colors',
+      image: '/generated/thumbnail_24fa2dee-697a-4ab2-8fd4-d815a8407f64.png',
+      views: '2.8M',
+      ctr: '16.4%'
+    },
+    {
+      id: 'health-wellness',
+      title: 'Health & Wellness Tips',
+      description: 'Holistic health content with calming aesthetics',
+      image: '/generated/thumbnail_ca712204-4183-4d70-9c76-ef107f5f85ad.png',
+      views: '2.3M',
+      ctr: '15.3%'
+    },
+    {
+      id: 'photography-tips',
+      title: 'Photography Pro Tips',
+      description: 'Professional photography advice with visual examples',
+      image: '/generated/thumbnail_0346ea5b-bde6-432c-a779-4d76a7313911.png',
+      views: '2.0M',
+      ctr: '14.2%'
+    },
+    {
+      id: 'diy-projects',
+      title: 'Amazing DIY Projects',
+      description: 'Creative DIY content with step-by-step visuals',
+      image: '/generated/thumbnail_4486f8ea-fdae-4b26-826f-4127ab90c4d7.png',
+      views: '1.7M',
+      ctr: '13.1%'
+    },
+    {
+      id: 'science-explained',
+      title: 'Science Made Simple',
+      description: 'Complex science concepts with clear explanations',
+      image: '/generated/thumbnail_602e710e-9d36-4a8e-9284-4907564828fe.png',
+      views: '2.4M',
+      ctr: '15.8%'
+    },
+    {
+      id: 'fashion-trends',
+      title: 'Latest Fashion Trends',
+      description: 'Trendy fashion content with stylish aesthetics',
+      image: '/generated/thumbnail_9ca9bac4-8e0e-4c99-86a8-6bc3ac806948.png',
+      views: '2.1M',
+      ctr: '15.1%'
+    },
+    {
+      id: 'movie-review',
+      title: 'Blockbuster Movie Review',
+      description: 'Cinematic content with dramatic visual effects',
+      image: '/generated/thumbnail_334bd716-1b5a-459c-8e71-0aeb2c874073.png',
+      views: '3.6M',
+      ctr: '18.1%'
+    },
+    {
+      id: 'investment-tips',
+      title: 'Smart Investment Guide',
+      description: 'Financial advice with professional presentation',
+      image: '/generated/thumbnail_48e2475b-b0a6-4cce-9a90-93e2c9b5a84a.png',
+      views: '1.8M',
+      ctr: '13.4%'
+    },
+    {
+      id: 'gaming-tournament',
+      title: 'Epic Gaming Tournament',
+      description: 'Competitive gaming with high-stakes atmosphere',
+      image: '/generated/thumbnail_6b7feff2-6144-4c23-8a68-dc42ac9f995c.png',
+      views: '4.3M',
+      ctr: '19.5%'
+    },
+    {
+      id: 'cooking-basics',
+      title: 'Cooking for Beginners',
+      description: 'Simple cooking techniques for new chefs',
+      image: '/generated/thumbnail_57cd9e3b-d491-4edc-9678-4518e7ee5b1e.png',
+      views: '2.2M',
+      ctr: '14.7%'
+    }
+  ];
+
+
+
+
+
+  const openShowcasePreview = (thumbnail: typeof showcaseThumbnails[0]) => {
+    setSelectedThumbnail(thumbnail);
+    setShowShowcasePreview(true);
+  };
+
   return (
-    <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${
+    <div className={`min-h-screen relative overflow-hidden overflow-x-hidden transition-colors duration-500 ${
       isDark 
         ? 'bg-gradient-to-br from-slate-900 via-orange-900/20 to-slate-900' 
         : 'bg-gradient-to-br from-slate-50 via-orange-50/30 to-slate-100'
@@ -168,82 +448,152 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
               </motion.div>
             </div>
 
-            {/* Example Gallery */}
+            {/* Showcase Section - What Least You Can Expect */}
             <motion.div
-              className="mt-16"
+              className="mt-20"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 0.8 }}
+              transition={{ delay: 1.6, duration: 0.8 }}
             >
-              <h3 className={`text-2xl font-bold mb-8 ${
+              <h3 className={`text-3xl font-bold mb-8 text-center ${
                 isDark ? 'text-white' : 'text-slate-900'
               }`}>
-                Trusted by creators worldwide ✨
+                What Least You Can Expect ✨
               </h3>
               
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {exampleThumbnails.map((example, index) => (
-                  <motion.div
-                    key={index}
-                    className={`group relative overflow-hidden rounded-2xl backdrop-blur-sm border shadow-xl hover:shadow-2xl transition-all duration-300 ${
-                      isDark 
-                        ? 'bg-slate-800/60 border-slate-600/50' 
-                        : 'bg-white/80 border-slate-200/50'
-                    }`}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.4 + index * 0.2, duration: 0.6 }}
-                    whileHover={{ scale: 1.02, y: -5 }}
-                  >
-                    <div className="aspect-video relative overflow-hidden rounded-t-2xl">
-                      <img
-                        src={example.image}
-                        alt={example.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      
-                      {/* Play Button Overlay */}
-                      <motion.div
-                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
-                        whileHover={{ scale: 1.1 }}
-                      >
-                        <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-2xl">
-                          <Play className="w-6 h-6 text-white ml-1" />
+              {/* Showcase Section - What Least You Can Expect */}
+              <div className="relative max-w-6xl mx-auto">
+                {/* Shadcn Carousel */}
+                <Carousel
+                  plugins={[autoplayPlugin.current]}
+                  className="w-full"
+                  onMouseEnter={autoplayPlugin.current.stop}
+                  onMouseLeave={autoplayPlugin.current.reset}
+                >
+                  <CarouselContent>
+                    {showcaseThumbnails.map((thumbnail, index) => (
+                      <CarouselItem key={thumbnail.id} className="md:basis-1/2 lg:basis-1/3">
+                        <div className="p-2">
+                          <div 
+                            className="relative aspect-video overflow-hidden rounded-xl bg-slate-800 group cursor-pointer"
+                            onClick={() => openShowcasePreview(thumbnail)}
+                          >
+                            <img
+                              src={thumbnail.image}
+                              alt={thumbnail.title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                            
+                            {/* Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+                            
+                            {/* Content - Only visible on hover */}
+                            <div className="absolute bottom-0 left-0 right-0 p-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <h4 className="text-lg font-bold mb-1 line-clamp-1">
+                                {thumbnail.title}
+                              </h4>
+                              <p className="text-sm text-slate-200 mb-2 line-clamp-2">
+                                {thumbnail.description}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs">
+                                <span className="bg-orange-500/20 text-orange-300 px-2 py-1 rounded-full">
+                                  {thumbnail.views}
+                                </span>
+                                <span className="bg-red-500/20 text-red-300 px-2 py-1 rounded-full">
+                                  {thumbnail.ctr}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Preview Icon */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openShowcasePreview(thumbnail);
+                              }}
+                              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+                              title="Preview Full Screen"
+                            >
+                              <Maximize2 size={16} />
+                            </button>
+                          </div>
                         </div>
-                      </motion.div>
-
-                      {/* Duration Badge */}
-                      <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
-                        16:9 HD
-                      </div>
-                    </div>
-
-                    <div className="p-4">
-                      <h4 className={`font-bold text-lg mb-2 ${
-                        isDark ? 'text-white' : 'text-slate-900'
-                      }`}>
-                        {example.title}
-                      </h4>
-                      <div className="flex justify-between items-center">
-                        <span className={`text-sm ${
-                          isDark ? 'text-white/70' : 'text-slate-600'
-                        }`}>
-                          {example.views} views
-                        </span>
-                        <span className="text-sm font-bold text-orange-600">
-                          {example.ctr} CTR
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="bg-black/70 text-white border-0" />
+                  <CarouselNext className="bg-black/70 text-white border-0" />
+                </Carousel>
               </div>
             </motion.div>
           </div>
         </div>
       </main>
 
+      {/* Full Screen Showcase Preview Modal */}
+      <AnimatePresence>
+        {showShowcasePreview && selectedThumbnail && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => {
+              setShowShowcasePreview(false);
+              setSelectedThumbnail(null);
+            }}
+          >
+            {/* Close button */}
+            <motion.button
+              onClick={() => {
+                setShowShowcasePreview(false);
+                setSelectedThumbnail(null);
+              }}
+              className="absolute top-6 right-6 z-10 w-12 h-12 bg-white/20 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <X className="w-6 h-6" />
+            </motion.button>
+
+            {/* Image container */}
+            <motion.div
+              className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={selectedThumbnail?.image || ''}
+                alt={selectedThumbnail?.title || ''}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              />
+            </motion.div>
+
+            {/* Thumbnail info overlay */}
+            <motion.div
+              className="absolute bottom-6 left-6 right-6 bg-black/60 backdrop-blur-sm text-white rounded-2xl p-4 max-w-md"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg">{selectedThumbnail?.title || ''}</h3>
+                  <p className="text-sm text-gray-300">{selectedThumbnail?.description || ''}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-orange-400">{selectedThumbnail?.ctr || ''}</div>
+                  <div className="text-xs text-gray-400">CTR</div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
