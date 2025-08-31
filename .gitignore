@@ -13,6 +13,7 @@
 /public/uploads/
 /public/videos/
 /public/thumbnails/
+/public/generated/
 # /temp/ - Removed since we no longer use file system operations
 
 # testing
