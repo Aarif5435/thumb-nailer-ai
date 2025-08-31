@@ -33,7 +33,6 @@ export class VectorDatabase {
             distance: 'Cosine',
           },
         });
-         (`Collection ${this.collectionName} created successfully`);
       }
     } catch (error) {
       console.error('Error initializing collection:', error);
@@ -112,7 +111,6 @@ export class VectorDatabase {
         points,
       });
 
-       (`Added ${points.length} thumbnails to vector database`);
     } catch (error) {
       console.error('Error batch adding thumbnails:', error);
       throw error;

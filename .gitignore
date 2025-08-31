@@ -14,7 +14,7 @@
 /public/uploads/
 /public/videos/
 /public/thumbnails/
-/temp/
+# /temp/ - Removed since we no longer use file system operations
 
 # testing
 /coverage

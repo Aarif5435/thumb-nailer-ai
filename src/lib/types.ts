@@ -50,14 +50,15 @@ export interface GeneratedThumbnail {
     keyElements?: string;
     stylePreference?: string;
     generationTimestamp?: string;
-    aspectRatio?: string;
-    dimensions?: string;
-    colorCount?: number;
-    elementCount?: number;
-    hasText?: boolean;
-    hasLogo?: boolean;
-    referenceCount?: number;
-    averageReferenceScore?: number;
+    model?: string;
+    promptVersion?: string;
+    optimizationLevel?: string;
+    referenceScore?: number;
+    ctrOptimization?: {
+      score: number;
+      insights: string[];
+      recommendations: string[];
+    };
   };
 }
 

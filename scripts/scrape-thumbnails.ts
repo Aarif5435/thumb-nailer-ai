@@ -50,7 +50,7 @@ async function main() {
 
     // Show final database stats
     const info = await vectorDB.getCollectionInfo();
-  
+    
   } catch (error) {
     console.error('❌ Error during scraping:', error);
     process.exit(1);

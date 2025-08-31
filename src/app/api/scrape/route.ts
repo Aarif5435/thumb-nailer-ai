@@ -13,7 +13,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { categories, maxPerCategory } = ScrapeRequestSchema.parse(body);
 
-     ("Starting thumbnail scraping...");
 
     // Initialize database if needed
     await vectorDB.initializeCollection();
@@ -23,7 +22,6 @@ export async function POST(request: Request) {
     if (categories && categories.length > 0) {
       // Scrape specific categories
       for (const category of categories) {
-         (`Scraping ${category}...`);
         const thumbnails = await youtubeScraper.scrapeThumbnails(
           category as any,
           maxPerCategory
@@ -33,7 +31,6 @@ export async function POST(request: Request) {
         // Add to vector database
         if (thumbnails.length > 0) {
           await vectorDB.batchAddThumbnails(thumbnails);
-           (`Added ${thumbnails.length} ${category} thumbnails to database`);
         }
       }
     } else {
@@ -44,7 +41,6 @@ export async function POST(request: Request) {
       for (const [category, thumbnails] of Object.entries(results)) {
         if (Array.isArray(thumbnails) && thumbnails.length > 0) {
           await vectorDB.batchAddThumbnails(thumbnails);
-           (`Added ${thumbnails.length} ${category} thumbnails to database`);
         }
       }
     }

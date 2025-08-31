@@ -84,7 +84,7 @@ export class YouTubeAPIService {
         )
         .slice(0, maxResults);
 
-       (`Found ${thumbnails.length} reference thumbnails for topic: ${topic}`);
+      console.log(`Found ${thumbnails.length} reference thumbnails for topic: ${topic}`);
       
       return thumbnails;
     } catch (error) {

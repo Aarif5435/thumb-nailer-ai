@@ -252,7 +252,7 @@ Ensure the main subject/element is prominently displayed and easily recognizable
       `${userAnswers.targetAudience.toLowerCase()} ${userAnswers.keyElements.toLowerCase().replace(/['']/g, '')}`,
     ];
 
-    return [...new Set(variations)]; // Remove duplicates
+    return Array.from(new Set(variations)); // Remove duplicates
   }
 }
 
