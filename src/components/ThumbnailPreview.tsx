@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { RefreshCw, Download, Eye, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, Download, Eye, AlertCircle, X, Maximize2 } from 'lucide-react';
 
 interface ThumbnailPreviewProps {
   imageUrl: string;
@@ -15,6 +15,7 @@ export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating }: 
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageData, setImageData] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     // Try to load the image data directly
@@ -74,7 +75,7 @@ export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating }: 
           animate={{ opacity: 1, x: 0 }}
         >
           <Eye className="w-8 h-8 mr-3 text-red-500" />
-          Your Thumbnail is Ready!
+          Thumbnail Ready!
         </motion.h2>
         
         <div className="flex space-x-4">
@@ -87,9 +88,19 @@ export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating }: 
               whileTap={{ scale: 0.95 }}
             >
               <RefreshCw className={`w-5 h-5 mr-2 ${regenerating ? 'animate-spin' : ''}`} />
-              {regenerating ? 'Regenerating...' : 'Regenerate'}
+              {regenerating ? 'Creating...' : 'New'}
             </motion.button>
           )}
+          
+          <motion.button
+            onClick={() => setShowPreview(true)}
+            className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Maximize2 className="w-5 h-5 mr-2" />
+            Preview
+          </motion.button>
           
           <motion.button
             onClick={handleDownload}
@@ -98,7 +109,7 @@ export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating }: 
             whileTap={{ scale: 0.95 }}
           >
             <Download className="w-5 h-5 mr-2" />
-            Download HD
+            Download
           </motion.button>
         </div>
       </div>
@@ -193,6 +204,68 @@ export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating }: 
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Full Screen Preview Modal */}
+      <AnimatePresence>
+        {showPreview && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Close button */}
+            <motion.button
+              onClick={() => setShowPreview(false)}
+              className="absolute top-6 right-6 z-10 w-12 h-12 bg-white/20 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <X className="w-6 h-6" />
+            </motion.button>
+
+            {/* Image container */}
+            <motion.div
+              className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              {imageData && (
+                <motion.img
+                  src={imageData}
+                  alt={alt}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                />
+              )}
+            </motion.div>
+
+            {/* Thumbnail info overlay */}
+            <motion.div
+              className="absolute bottom-6 left-6 right-6 bg-black/60 backdrop-blur-sm text-white rounded-2xl p-4 max-w-md"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg">Thumbnail Preview</h3>
+                  <p className="text-sm text-gray-300">16:9 HD • 1280×720 • CTR Optimized</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-green-400">95%</div>
+                  <div className="text-xs text-gray-400">CTR</div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
