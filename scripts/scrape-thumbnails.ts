@@ -5,19 +5,15 @@ import { vectorDB } from '../src/lib/qdrant';
 import { config } from '../src/lib/config';
 
 async function main() {
-   ('🚀 Starting YouTube thumbnail scraping...\n');
 
   try {
     // Initialize vector database
-     ('📊 Initializing vector database...');
     await vectorDB.initializeCollection();
-     ('✅ Vector database initialized\n');
 
     // Check if we should scrape specific categories
     const categories = process.argv.slice(2);
     
     if (categories.length > 0) {
-       (`🎯 Scraping specific categories: ${categories.join(', ')}\n`);
       
       for (const category of categories) {
         if (config.scraping.categories.includes(category as any)) {
@@ -27,18 +23,13 @@ async function main() {
           );
           
           if (thumbnails.length > 0) {
-             (`💾 Adding ${thumbnails.length} ${category} thumbnails to database...`);
             await vectorDB.batchAddThumbnails(thumbnails);
-             (`✅ Successfully added ${category} thumbnails\n`);
           } else {
-             (`⚠️  No thumbnails found for ${category}\n`);
           }
         } else {
-           (`❌ Invalid category: ${category}. Available: ${config.scraping.categories.join(', ')}\n`);
         }
       }
     } else {
-       ('📹 Scraping all categories...\n');
       
       // Scrape all categories
       const results = await youtubeScraper.scrapeAllCategories();
@@ -46,9 +37,7 @@ async function main() {
       // Add to vector database
       for (const [category, thumbnails] of Object.entries(results)) {
         if (Array.isArray(thumbnails) && thumbnails.length > 0) {
-           (`💾 Adding ${thumbnails.length} ${category} thumbnails to database...`);
           await vectorDB.batchAddThumbnails(thumbnails);
-           (`✅ Successfully added ${category} thumbnails`);
         }
       }
       
@@ -57,7 +46,6 @@ async function main() {
         0
       );
       
-       (`\n🎉 Scraping completed! Total thumbnails: ${totalThumbnails}`);
     }
 
     // Show final database stats

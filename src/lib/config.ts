@@ -1,17 +1,17 @@
 export const config = {
   // API Keys
   googleAI: {
-    apiKey: process.env.FLASH_IMG_API_KEY!,
+    apiKey: process.env.FLASH_IMG_API_KEY || '',
   },
   youtube: {
-    apiKey: process.env.YOUTUBE_API_KEY!,
+    apiKey: process.env.YOUTUBE_API_KEY || '',
   },
   qdrant: {
     url: process.env.QDRANT_URL || 'http://localhost:6333',
-    apiKey: process.env.QDRANT_API_KEY,
+    apiKey: process.env.QDRANT_API_KEY || '',
   },
   openai: {
-    apiKey: process.env.OPENAI_API_KEY!,
+    apiKey: process.env.OPENAI_API_KEY || '',
   },
 
   // App Configuration
