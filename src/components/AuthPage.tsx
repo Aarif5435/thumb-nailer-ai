@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Mail, Eye, EyeOff, Sparkles, Shield, Users } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -15,7 +14,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
 
   // Hardcoded credentials
   const VALID_EMAIL = 'aarif.mohammad0909@gmail.com';

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Question } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Sparkles, ArrowUp } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface ChatQuestionFormProps {
   questions: Question[];
@@ -24,7 +23,7 @@ interface Message {
 }
 
 export function ChatQuestionForm({ questions, answers, onAnswersChange, onComplete, topic }: ChatQuestionFormProps) {
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);

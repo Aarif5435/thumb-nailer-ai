@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X, Image as ImageIcon, Check, Sparkles, Camera, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface ModernImageUploadProps {
   onImageUpload: (base64: string) => void;
@@ -13,7 +12,7 @@ interface ModernImageUploadProps {
 }
 
 export function ModernImageUpload({ onImageUpload, onImageRemove, uploadedImage }: ModernImageUploadProps) {
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 

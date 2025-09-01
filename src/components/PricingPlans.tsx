@@ -2,10 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { Check, Star, Zap, Crown } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 
 export function PricingPlans() {
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
 
   const handlePayment = async (plan: any) => {
     try {

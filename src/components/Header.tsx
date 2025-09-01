@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Youtube, Sparkles, Menu, X, Moon, Sun, LogOut } from 'lucide-react';
 import { useState } from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useUser, SignOutButton } from '@clerk/nextjs';
 
 interface HeaderProps {
   currentPage: 'home' | 'topic' | 'image' | 'questions' | 'result';
@@ -12,7 +12,12 @@ interface HeaderProps {
 
 export function Header({ currentPage, onReset }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isDark, toggleTheme } = useTheme();
+  const [isDark, setIsDark] = useState(false);
+  const { user } = useUser();
+  
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+  };
 
   const steps = [
     { id: 'topic', name: 'Topic', completed: ['image', 'questions', 'result'].includes(currentPage) },
@@ -139,7 +144,7 @@ export function Header({ currentPage, onReset }: HeaderProps) {
             </motion.button>
 
             {/* User Menu (Only show when authenticated) */}
-            {typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') === 'true' && (
+            {user && (
               <>
                 {/* User Email (Compact) */}
                 <div className={`hidden md:flex items-center px-3 py-2 rounded-xl ${
@@ -147,31 +152,26 @@ export function Header({ currentPage, onReset }: HeaderProps) {
                     ? 'bg-slate-700/50 text-slate-300 border border-slate-600/50' 
                     : 'bg-white/80 text-slate-700 border border-slate-200/50'
                 }`}>
-                                  <span className="text-sm font-medium truncate max-w-32">
-                  {typeof window !== 'undefined' && localStorage.getItem('userEmail')?.split('@')[0] || 'User'}
-                </span>
+                  <span className="text-sm font-medium truncate max-w-32">
+                    {user.emailAddresses[0]?.emailAddress?.split('@')[0] || 'User'}
+                  </span>
                 </div>
 
                 {/* Logout Button */}
-                <motion.button
-                  onClick={() => {
-                    if (typeof window !== 'undefined') {
-                      localStorage.removeItem('isAuthenticated');
-                      localStorage.removeItem('userEmail');
-                      window.location.reload();
-                    }
-                  }}
-                  className={`p-2 rounded-xl transition-all duration-300 ${
-                    isDark 
-                      ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30' 
-                      : 'bg-red-100 text-red-600 hover:bg-red-200 border border-red-200'
-                  } shadow-lg hover:shadow-xl`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  title="Logout"
-                >
-                  <LogOut className="w-4 h-4" />
-                </motion.button>
+                <SignOutButton>
+                  <motion.button
+                    className={`p-2 rounded-xl transition-all duration-300 ${
+                      isDark 
+                        ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30' 
+                        : 'bg-red-100 text-red-600 hover:bg-red-200 border border-red-200'
+                    } shadow-lg hover:shadow-xl`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="Logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </motion.button>
+                </SignOutButton>
               </>
             )}
 
@@ -222,7 +222,7 @@ export function Header({ currentPage, onReset }: HeaderProps) {
           </div>
           
           {/* Mobile Menu Actions */}
-          {typeof window !== 'undefined' && localStorage.getItem('isAuthenticated') === 'true' && (
+          {user && (
             <>
               {currentPage !== 'topic' && (
                 <motion.button
@@ -237,21 +237,16 @@ export function Header({ currentPage, onReset }: HeaderProps) {
               )}
 
               {/* Mobile Logout Button */}
-              <motion.button
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    localStorage.removeItem('isAuthenticated');
-                    localStorage.removeItem('userEmail');
-                    window.location.reload();
-                  }
-                }}
-                className="w-full mt-4 flex items-center justify-center px-4 py-2 text-red-600 bg-red-100 rounded-xl transition-all duration-300"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </motion.button>
+              <SignOutButton>
+                <motion.button
+                  className="w-full mt-4 flex items-center justify-center px-4 py-2 text-red-600 bg-red-100 rounded-xl transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </motion.button>
+              </SignOutButton>
             </>
           )}
         </motion.div>

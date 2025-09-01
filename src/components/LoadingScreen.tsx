@@ -2,10 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { Sparkles, Youtube, Zap } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 
 export function LoadingScreen() {
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
 
   const facts = [
     "🎯 Thumbnails account for 90% of video performance",

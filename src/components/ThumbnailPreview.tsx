@@ -9,9 +9,10 @@ interface ThumbnailPreviewProps {
   alt: string;
   onRegenerate?: () => void;
   regenerating?: boolean;
+  onShowPaywall?: () => void;
 }
 
-export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating }: ThumbnailPreviewProps) {
+export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating, onShowPaywall }: ThumbnailPreviewProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageData, setImageData] = useState<string | null>(null);
@@ -48,6 +49,19 @@ export function ThumbnailPreview({ imageUrl, alt, onRegenerate, regenerating }: 
 
   const handleDownload = async () => {
     try {
+      // Check if user can download (requires credits)
+      const checkResponse = await fetch('/api/check-download');
+      const checkData = await checkResponse.json();
+
+      if (!checkData.canDownload) {
+        // No credits available, show paywall
+        if (onShowPaywall) {
+          onShowPaywall();
+        }
+        return;
+      }
+
+      // User has credits, proceed with download
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);

@@ -14,6 +14,7 @@ interface ThumbnailResultProps {
   onRegenerate: () => void;
   onStartOver: () => void;
   regenerating?: boolean;
+  onShowPaywall?: () => void;
 }
 
 export function ThumbnailResult({ 
@@ -23,7 +24,8 @@ export function ThumbnailResult({
   userAnswers,
   onRegenerate, 
   onStartOver,
-  regenerating 
+  regenerating,
+  onShowPaywall
 }: ThumbnailResultProps) {
   const [showReferences, setShowReferences] = useState(false);
 
@@ -263,6 +265,7 @@ export function ThumbnailResult({
         alt="Generated Thumbnail"
         onRegenerate={onRegenerate}
         regenerating={regenerating}
+        onShowPaywall={onShowPaywall}
       />
 
       {/* CTR Optimization Insights */}

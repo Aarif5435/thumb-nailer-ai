@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Upload, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 import { ModernImageUpload } from './ModernImageUpload';
 
 interface ImageUploadPageProps {
@@ -24,7 +23,7 @@ export function ImageUploadPage({
   loadingQuestions,
   isLoading = false
 }: ImageUploadPageProps) {
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 py-12">

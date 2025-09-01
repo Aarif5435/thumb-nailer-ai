@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Sparkles, TrendingUp, Zap, Users, Award, ArrowRight, Moon, Sun, Lock, Clock, ChevronLeft, ChevronRight, X, Maximize2, IndianRupee } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 import { ParticlesBackground } from './ParticlesBackground';
 import { useState, useRef } from 'react';
 import Autoplay from "embla-carousel-autoplay";
@@ -14,6 +13,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { PricingPlans } from './PricingPlans';
+import { SignInButton } from '@clerk/nextjs';
 
 interface HeroSectionProps {
   onGetStarted: () => void;
@@ -21,7 +21,11 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSectionProps) {
-  const { isDark, toggleTheme } = useTheme();
+  const [isDark, setIsDark] = useState(false);
+  
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+  };
   
   // State for showcase carousel and preview
   const [currentShowcaseSlide, setCurrentShowcaseSlide] = useState(0);
@@ -249,9 +253,9 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
                     playsInline
                     controls={false}
                   >
-                    <source src="/demo-video/demo.mov" type="video/mp4" />
-                    <source src="/demo-video/demo.mov" type="video/quicktime" />
-                    <source src="/demo-video/demo.mov" type="video/webm" />
+                    <source src="/demo/demo.mov" type="video/mp4" />
+                    <source src="/demo/demo.mov" type="video/quicktime" />
+                    <source src="/demo/demo.mov" type="video/webm" />
                     Your browser does not support the video tag.
                   </video>
                   
@@ -409,18 +413,34 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
                 transition={{ delay: 1.4, duration: 0.6 }}
                 className="space-y-4"
               >
-                <motion.button
-                  onClick={onGetStarted}
-                  className="group px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:from-orange-600 hover:to-red-600"
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="flex items-center justify-center">
-                    <Play className="w-5 h-5 mr-2" />
-                    {isAuthenticated ? 'Create My First Thumbnail' : 'Get Started'}
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                  </span>
-                </motion.button>
+                {isAuthenticated ? (
+                  <motion.button
+                    onClick={onGetStarted}
+                    className="group px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:from-orange-600 hover:to-red-600"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="flex items-center justify-center">
+                      <Play className="w-5 h-5 mr-2" />
+                      Create My First Thumbnail
+                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                    </span>
+                  </motion.button>
+                ) : (
+                  <SignInButton>
+                    <motion.button
+                      className="group px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:from-orange-600 hover:to-red-600"
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className="flex items-center justify-center">
+                        <Lock className="w-5 h-5 mr-2" />
+                        Sign In to Get Started
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                      </span>
+                    </motion.button>
+                  </SignInButton>
+                )}
                 
                 <p className={`text-sm ${
                   isDark ? 'text-slate-400' : 'text-slate-500'

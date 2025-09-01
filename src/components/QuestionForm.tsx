@@ -247,7 +247,7 @@ export function QuestionForm({ questions, answers, onAnswersChange, onComplete, 
                     value={currentAnswer || ''}
                     onChange={(e) => handleAnswer(currentQ.id, e.target.value)}
                     placeholder="Share your thoughts here..."
-                    className="w-full p-6 border-2 border-gray-200/50 rounded-2xl focus:border-orange-500 focus:outline-none resize-none bg-white/80 backdrop-blur-sm text-lg leading-relaxed transition-all duration-300 focus:shadow-lg text-black"
+                    className="w-full p-6 border-2 rounded-2xl border-orange-500 focus:outline-none resize-none bg-white/80 backdrop-blur-sm text-lg leading-relaxed transition-all duration-300 focus:shadow-lg text-black"
                     rows={4}
                   />
                   <div className="absolute bottom-4 right-4 text-sm text-gray-400">

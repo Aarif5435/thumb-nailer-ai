@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Lock, Zap, Star, Crown, X } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface PaywallProps {
   isOpen: boolean;
@@ -11,7 +10,7 @@ interface PaywallProps {
 }
 
 export function Paywall({ isOpen, onClose, feature = 'premium feature' }: PaywallProps) {
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
 
   const handlePayment = async (plan: any) => {
     try {

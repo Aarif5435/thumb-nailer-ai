@@ -7,25 +7,22 @@ import { ImageUploadPage } from '@/components/ImageUploadPage';
 import { ThumbnailResult } from '@/components/ThumbnailResult';
 import { Header } from '@/components/Header';
 import { HeroSection } from '@/components/HeroSection';
-import { AuthPage } from '@/components/AuthPage';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
+import { UserCredits } from '@/components/UserCredits';
+import { AdminDebug } from '@/components/AdminDebug';
+import { useUser, SignInButton } from '@clerk/nextjs';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Lock } from 'lucide-react';
 
 // Main App Component
 export default function App() {
-  return (
-    <ThemeProvider>
-      <HomeContent />
-    </ThemeProvider>
-  );
+  return <HomeContent />;
 }
 
 // Home Content Component
 function HomeContent() {
-  const { isDark } = useTheme();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, isLoaded } = useUser();
+  const [isDark, setIsDark] = useState(false);
   const [currentPage, setCurrentPage] = useState<'home' | 'topic' | 'image' | 'questions' | 'result'>('home');
   const [topic, setTopic] = useState('');
   const [userImage, setUserImage] = useState('');
@@ -34,32 +31,11 @@ function HomeContent() {
   const [result, setResult] = useState<ThumbnailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const navigateTo = (page: 'home' | 'topic' | 'image' | 'questions' | 'result') => {
     setCurrentPage(page);
   };
-
-  // Check authentication on mount
-  useEffect(() => {
-    const authStatus = localStorage.getItem('isAuthenticated');
-    const showAuth = localStorage.getItem('showAuth');
-    const redirectToTopic = localStorage.getItem('redirectToTopic');
-    
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-      
-      // If user was redirected to topic after login, go there
-      if (redirectToTopic === 'true') {
-        setCurrentPage('topic');
-        localStorage.removeItem('redirectToTopic');
-      }
-    }
-    
-    if (showAuth === 'true') {
-      setIsAuthenticated(false);
-      localStorage.removeItem('showAuth');
-    }
-  }, []);
 
   const resetApp = () => {
     setCurrentPage('home');
@@ -70,14 +46,9 @@ function HomeContent() {
     setResult(null);
   };
 
-  const handleAuthSuccess = () => {
-    setIsAuthenticated(true);
-    setCurrentPage('topic'); // Go directly to topic step after login
-  };
-
-  // Show auth page if not authenticated and trying to access protected features
-  if (!isAuthenticated && currentPage !== 'home') {
-    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+  // Show loading while Clerk is loading
+  if (!isLoaded) {
+    return <LoadingScreen />;
   }
 
   const fetchQuestions = async (topicText: string) => {
@@ -106,19 +77,28 @@ function HomeContent() {
     
     setLoading(true);
     
-    // Debug: Log what's being sent
-    const userAnswersData = {
-      topic,
-      targetAudience: answers.targetAudience || 'general',
-      contentType: 'video',
-      emotion: answers.emotion || 'excited',
-      keyElements: answers.keyElements || 'engaging visuals',
-      stylePreference: answers.stylePreference || 'modern',
-      additionalAnswers: answers
-    };
-  
-    
     try {
+      // First, check if user can generate (free preview or has credits)
+      const checkResponse = await fetch('/api/check-free-preview');
+      const checkData = await checkResponse.json();
+      if (!checkData.canGenerate) {
+        // No free preview or credits available, show paywall
+        setShowPaywall(true);
+        setLoading(false);
+        return;
+      }
+
+      // Debug: Log what's being sent
+      const userAnswersData = {
+        topic,
+        targetAudience: answers.targetAudience || 'general',
+        contentType: 'video',
+        emotion: answers.emotion || 'excited',
+        keyElements: answers.keyElements || 'engaging visuals',
+        stylePreference: answers.stylePreference || 'modern',
+        additionalAnswers: answers
+      };
+    
       const response = await fetch('/api/flash_img', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -132,6 +112,12 @@ function HomeContent() {
       if (response.ok) {
         const data = await response.json();
         setResult(data as ThumbnailData);
+        
+        // Mark free preview as used if this was a free preview
+        if (checkData.credits && !checkData.credits.hasUsedFreePreview && !checkData.credits.isAdmin) {
+          await fetch('/api/use-free-preview', { method: 'POST' });
+        }
+        
         navigateTo('result');
       }
     } catch (error) {
@@ -141,20 +127,91 @@ function HomeContent() {
     }
   };
 
+  const handleRegenerate = async () => {
+    try {
+      // Regeneration always requires credits (no free preview for regeneration)
+      const creditResponse = await fetch('/api/use-credits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'regenerate' }),
+      });
+
+      const creditData = await creditResponse.json();
+      console.log("canGenerate", creditData)
+
+      if (!creditData.success) {
+        // No credits available, show paywall
+        setShowPaywall(true);
+        return;
+      }
+
+      // Proceed with regeneration
+      await generateThumbnail();
+    } catch (error) {
+      console.error('Error regenerating thumbnail:', error);
+    }
+  };
+
   // Render current page
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HeroSection onGetStarted={() => navigateTo('topic')} isAuthenticated={isAuthenticated} />;
+        return <HeroSection onGetStarted={() => navigateTo('topic')} isAuthenticated={!!user} />;
       
       case 'topic':
-        return (
-          <TopicPage 
-            topic={topic}
-            setTopic={setTopic}
-            onContinue={() => navigateTo('image')}
-            onBack={() => navigateTo('home')}
-          />
+        return user ? (
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto">
+              <UserCredits />
+              <div className="mt-8">
+                <TopicPage 
+                  topic={topic}
+                  setTopic={setTopic}
+                  onContinue={() => navigateTo('image')}
+                  onBack={() => navigateTo('home')}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="min-h-screen flex items-center justify-center px-6 py-12">
+            <div className="max-w-md mx-auto text-center">
+              <div className="mb-8">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-3xl flex items-center justify-center shadow-2xl">
+                  <Lock className="w-10 h-10 text-white" />
+                </div>
+                <h1 className="text-3xl font-bold mb-4 text-gray-900">
+                  Authentication Required
+                </h1>
+                <p className="text-lg text-gray-600 mb-8">
+                  Please sign in to create thumbnails
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <SignInButton>
+                  <motion.button
+                    className="w-full px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Sign In to Continue
+                  </motion.button>
+                </SignInButton>
+                
+                <motion.button
+                  onClick={() => navigateTo('home')}
+                  className="w-full px-8 py-3 text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Back to Home
+                </motion.button>
+              </div>
+            </div>
+          </div>
         );
       
       case 'image':
@@ -186,9 +243,10 @@ function HomeContent() {
         return result ? (
           <ResultPage
             result={result as ThumbnailData}
-            onRegenerate={() => navigateTo('questions')}
+            onRegenerate={handleRegenerate}
             onStartOver={resetApp}
             userAnswers={answers}
+            onShowPaywall={() => setShowPaywall(true)}
           />
         ) : null;
       
@@ -215,10 +273,46 @@ function HomeContent() {
         </motion.div>
       </AnimatePresence>
 
-      {loading && <LoadingScreen />}
-    </div>
-  );
-}
+              {loading && <LoadingScreen />}
+
+        {/* Admin Debug Component */}
+        {/* <AdminDebug /> */}
+
+        {/* Paywall Modal */}
+        {showPaywall && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full">
+              <h3 className="text-2xl font-bold text-center mb-4">Credits Required!</h3>
+              <p className="text-center text-slate-600 mb-6">
+                You've used your free preview. Purchase credits to download, regenerate, or create more thumbnails!
+              </p>
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setShowPaywall(false)}
+                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPaywall(false);
+                    // Scroll to pricing section
+                    const pricingSection = document.getElementById('pricing-section');
+                    if (pricingSection) {
+                      pricingSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600"
+                >
+                  Buy Credits
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
 // Topic Page Component
 function TopicPage({ 
@@ -232,7 +326,7 @@ function TopicPage({
   onContinue: () => void;
   onBack: () => void;
 }) {
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 py-12">
@@ -354,7 +448,7 @@ function QuestionsPage({
   topic: string;
   onBack: () => void;
 }) {
-  const { isDark } = useTheme();
+  const isDark = false; // Default to light theme
 
   return (
     <div className="min-h-screen px-6 py-12">
@@ -401,12 +495,14 @@ function ResultPage({
   result,
   onRegenerate,
   onStartOver,
-  userAnswers
+  userAnswers,
+  onShowPaywall
 }: {
   result: ThumbnailData;
   onRegenerate: () => void;
   onStartOver: () => void;
   userAnswers: { [key: string]: string };
+  onShowPaywall?: () => void;
 }) {
   return (
     <div className="min-h-screen px-6 py-12">
@@ -426,6 +522,7 @@ function ResultPage({
           }}
           onRegenerate={onRegenerate}
           onStartOver={onStartOver}
+          onShowPaywall={onShowPaywall}
         />
       </div>
     </div>
