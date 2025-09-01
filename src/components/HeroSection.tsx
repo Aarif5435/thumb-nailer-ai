@@ -252,10 +252,11 @@ export function HeroSection({ onGetStarted, isAuthenticated = false }: HeroSecti
                     muted
                     playsInline
                     controls={false}
+                    poster="/demo/earth_burning.png"
+                    preload="auto"
                   >
-                    <source src="/demo/demo.mov" type="video/mp4" />
-                    <source src="/demo/demo.mov" type="video/quicktime" />
-                    <source src="/demo/demo.mov" type="video/webm" />
+                    <source src="/demo/demo.mp4" type="video/mp4" />
+                    <source src="/demo/demo.webm" type="video/webm" />
                     Your browser does not support the video tag.
                   </video>
                   
