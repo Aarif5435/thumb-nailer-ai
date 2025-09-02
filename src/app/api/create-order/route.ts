@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 
-// Initialize Razorpay
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+// Initialize Razorpay only when environment variables are available
+const getRazorpayInstance = () => {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new Error('Razorpay credentials not configured');
+  }
+  
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +33,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Create real Razorpay order
+    const razorpay = getRazorpayInstance();
     const order = await razorpay.orders.create(orderData);
 
     return NextResponse.json({

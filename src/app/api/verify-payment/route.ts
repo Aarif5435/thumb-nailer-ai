@@ -27,9 +27,16 @@ export async function POST(request: NextRequest) {
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = body;
 
     // Verify the payment signature
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return NextResponse.json(
+        { success: false, error: 'Razorpay configuration missing' },
+        { status: 500 }
+      );
+    }
+
     const text = `${razorpay_order_id}|${razorpay_payment_id}`;
     const signature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(text)
       .digest('hex');
 
