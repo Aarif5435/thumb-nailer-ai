@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserCredits {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  email                String
+  thumbnailsRemaining  Int      @default(0)
+  regeneratesRemaining Int      @default(0)
+  isAdmin              Boolean  @default(false)
+  hasUsedFreePreview   Boolean  @default(false)
+  lastUpdated          DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  thumbnails           ThumbnailHistory[]
+
+  @@map("user_credits")
+}
+
+model ThumbnailHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  topic       String
+  prompt      String
+  imageUrl    String?  // Base64 or URL
+  ctrScore    Float?
+  ctrAnalysis String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        UserCredits @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("thumbnail_history")
+}
+
+model RegenerateSession {
+  id        String   @id @default(cuid())
+  userId    String
+  topic     String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@map("regenerate_sessions")
+}

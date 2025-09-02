@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Youtube, Sparkles, Menu, X, Moon, Sun, LogOut } from 'lucide-react';
+import { Youtube, Sparkles, Menu, X, Moon, Sun, LogOut, User } from 'lucide-react';
 import { useState } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
+import Link from 'next/link';
 
 interface HeaderProps {
   currentPage: 'home' | 'topic' | 'image' | 'questions' | 'result';
@@ -156,6 +157,22 @@ export function Header({ currentPage, onReset }: HeaderProps) {
                     {user.emailAddresses[0]?.emailAddress?.split('@')[0] || 'User'}
                   </span>
                 </div>
+
+                {/* Profile Button */}
+                <Link href="/profile">
+                  <motion.button
+                    className={`p-2 rounded-xl transition-all duration-300 ${
+                      isDark 
+                        ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30' 
+                        : 'bg-blue-100 text-blue-600 hover:bg-blue-200 border border-blue-200'
+                    } shadow-lg hover:shadow-xl`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="Profile"
+                  >
+                    <User className="w-4 h-4" />
+                  </motion.button>
+                </Link>
 
                 {/* Logout Button */}
                 <SignOutButton>

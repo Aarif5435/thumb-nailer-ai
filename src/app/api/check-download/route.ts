@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { UserCreditsManager } from '@/lib/user-credits';
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
     
     if (!userId) {
       return NextResponse.json(
@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user email from Clerk
-    const email = sessionClaims?.email as string;
+    const user = await currentUser();
+    const email = user?.emailAddresses?.[0]?.emailAddress;
 
     if (!email) {
       return NextResponse.json(
