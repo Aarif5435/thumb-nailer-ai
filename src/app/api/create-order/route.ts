@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Razorpay from 'razorpay';
+
+// Initialize Razorpay
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Creating Razorpay order...');
+    console.log('RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID ? 'Set' : 'Not set');
+    console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? 'Set' : 'Not set');
+    
     const { amount, currency = 'INR' } = await request.json();
+    console.log('Order amount:', amount, 'currency:', currency);
 
     // Create order data for Razorpay
     const orderData = {
@@ -14,19 +26,18 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // For now, return a mock order ID
-    // In production, you would make a call to Razorpay API here
-    const mockOrderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Create real Razorpay order
+    const order = await razorpay.orders.create(orderData);
 
     return NextResponse.json({
       success: true,
-      orderId: mockOrderId,
+      orderId: order.id,
       amount: orderData.amount,
       currency: orderData.currency
     });
 
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error('Error creating Razorpay order:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create order' },
       { status: 500 }

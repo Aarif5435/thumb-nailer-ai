@@ -29,53 +29,92 @@ export function Paywall({ isOpen, onClose, feature = 'premium feature' }: Paywal
       const orderData = await orderResponse.json();
       
       if (!orderData.success) {
-        throw new Error('Failed to create order');
+        console.error('Order creation failed:', orderData);
+        throw new Error('Failed to create order: ' + (orderData.error || 'Unknown error'));
       }
 
-      // Load Razorpay script
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
-      document.body.appendChild(script);
+      // Check if Razorpay is already loaded
+      if (!(window as any).Razorpay) {
+        // Load Razorpay script if not already loaded
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
 
-      script.onload = () => {
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY',
-          amount: orderData.amount, // Amount in paise
-          currency: orderData.currency,
-          name: 'Thumb-nailer',
-          description: `${plan.name} - 3 thumbnails + 5 regenerates`,
-          image: '/logo.png',
-          order_id: orderData.orderId,
-          handler: function (response: any) {
-            console.log('Payment successful:', response);
-            alert('Payment successful! You can now create 3 thumbnails.');
-            onClose(); // Close paywall after successful payment
-          },
-          prefill: {
-            name: '',
-            email: '',
-            contact: ''
-          },
-          notes: {
-            address: 'Thumbnail AI Service'
-          },
-          theme: {
-            color: '#f97316'
-          },
-          modal: {
-            ondismiss: function() {
-              console.log('Payment modal closed');
-            }
+        // Wait for script to load
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+        });
+      }
+
+      const options = {
+        key: 'rzp_live_RCP6hrsPqK7mee', // Your live key from environment
+        amount: orderData.amount, // Amount in paise
+        currency: orderData.currency,
+        name: 'Thumb-nailer',
+        description: `${plan.name} - 3 thumbnails + 5 regenerates`,
+        image: '/logo.png',
+        order_id: orderData.orderId,
+        handler: function (response: any) {
+          console.log('Payment successful:', response);
+          // Call webhook to verify payment and add credits
+          handlePaymentSuccess(response);
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        notes: {
+          address: 'Thumbnail AI Service'
+        },
+        theme: {
+          color: '#f97316'
+        },
+        modal: {
+          ondismiss: function() {
+            console.log('Payment modal closed');
           }
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
+        }
       };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
     } catch (error) {
       console.error('Payment error:', error);
       alert('Payment failed. Please try again.');
+    }
+  };
+
+  const handlePaymentSuccess = async (response: any) => {
+    try {
+      // Verify payment with your backend
+      const verifyResponse = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature,
+        })
+      });
+
+      const verifyData = await verifyResponse.json();
+      
+      if (verifyData.success) {
+        alert('Payment successful! You can now create 3 thumbnails.');
+        onClose(); // Close paywall after successful payment
+        // Optionally refresh the page or update user credits
+        window.location.reload();
+      } else {
+        alert('Payment verification failed. Please contact support.');
+      }
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      alert('Payment verification failed. Please contact support.');
     }
   };
 

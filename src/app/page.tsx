@@ -46,6 +46,34 @@ function HomeContent() {
     setResult(null);
   };
 
+  // Check for regenerate session on component mount
+  useEffect(() => {
+    const checkRegenerateSession = async () => {
+      try {
+        const response = await fetch('/api/regenerate-session');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.topic) {
+            setTopic(data.topic);
+            setCurrentPage('topic');
+            // Clear the session after use
+            await fetch('/api/regenerate-session', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionId: data.sessionId })
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error checking regenerate session:', error);
+      }
+    };
+
+    if (user) {
+      checkRegenerateSession();
+    }
+  }, [user]);
+
   // Show loading while Clerk is loading
   if (!isLoaded) {
     return <LoadingScreen />;

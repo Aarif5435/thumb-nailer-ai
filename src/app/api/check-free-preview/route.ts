@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { UserCreditsManager } from '@/lib/user-credits';
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
     
     if (!userId) {
       return NextResponse.json(
@@ -13,7 +13,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const email = sessionClaims?.email as string;
+    const user = await currentUser();
+    const email = user?.emailAddresses?.[0]?.emailAddress;
+
+    if (!email) {
+      return NextResponse.json(
+        { success: false, message: 'Email not found' },
+        { status: 400 }
+      );
+    }
 
     // Force create fresh admin user for admin email
     const credits = email === 'aarif.mohammad0909@gmail.com' 

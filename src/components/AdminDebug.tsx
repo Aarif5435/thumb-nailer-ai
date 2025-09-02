@@ -40,6 +40,24 @@ export function AdminDebug() {
     }
   };
 
+  const viewAllUsers = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch('/api/all-users');
+      if (response.ok) {
+        const users = await response.json();
+        console.log('All users:', users);
+        alert(`Total users: ${users.length}\nCheck console for details`);
+      } else {
+        alert('Failed to fetch users');
+      }
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      alert('Error fetching users');
+    }
+  };
+
   useEffect(() => {
     if (user) {
       checkAdminStatus();
@@ -101,10 +119,16 @@ export function AdminDebug() {
           Refresh
         </button>
         <button
+          onClick={viewAllUsers}
+          className="flex-1 px-3 py-1 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition-colors"
+        >
+          View All
+        </button>
+        <button
           onClick={clearAllData}
           className="flex-1 px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors"
         >
-          Clear All Data
+          Clear All
         </button>
       </div>
     </motion.div>
