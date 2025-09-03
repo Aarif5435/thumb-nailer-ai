@@ -15,12 +15,7 @@ const getRazorpayInstance = () => {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Creating Razorpay order...');
-    console.log('RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID ? 'Set' : 'Not set');
-    console.log('RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? 'Set' : 'Not set');
-    
     const { amount, currency = 'INR' } = await request.json();
-    console.log('Order amount:', amount, 'currency:', currency);
 
     // Create order data for Razorpay
     const orderData = {
@@ -44,7 +39,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error creating Razorpay order:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create order' },
       { status: 500 }

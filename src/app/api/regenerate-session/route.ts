@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { topic } = body;
+    const { topic, originalThumbnailId, userImage } = body;
 
     if (!topic) {
       return NextResponse.json(
@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         topic,
+        originalThumbnailId: originalThumbnailId || null,
+        userImage: userImage || null,
         expiresAt
       }
     });
@@ -81,7 +83,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       topic: session.topic,
-      sessionId: session.id
+      sessionId: session.id,
+      userImage: session.userImage
     });
 
   } catch (error) {
@@ -108,9 +111,16 @@ export async function DELETE(request: NextRequest) {
 
     if (sessionId) {
       // Delete specific session
-      await prisma.regenerateSession.delete({
-        where: { id: sessionId }
-      });
+      try {
+        await prisma.regenerateSession.delete({
+          where: { id: sessionId }
+        });
+      } catch (error: any) {
+        // If session doesn't exist, that's fine - it might have been already deleted
+        if (error.code !== 'P2025') {
+          throw error;
+        }
+      }
     } else {
       // Delete all sessions for user
       await prisma.regenerateSession.deleteMany({

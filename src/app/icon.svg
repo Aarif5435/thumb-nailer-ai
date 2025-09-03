@@ -1,0 +1,26 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF4444;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF6B6B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main background -->
+  <rect width="32" height="32" rx="8" fill="url(#bgGradient)"/>
+  
+  <!-- Play button background -->
+  <rect x="6" y="6" width="20" height="20" rx="4" fill="white" opacity="0.9"/>
+  
+  <!-- Play button triangle -->
+  <path d="M12 9 L12 23 L22 16 Z" fill="url(#bgGradient)"/>
+  
+  <!-- Notification badge -->
+  <circle cx="24" cy="8" r="4" fill="url(#redGradient)"/>
+  <circle cx="24" cy="8" r="2" fill="white"/>
+</svg>

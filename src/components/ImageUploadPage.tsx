@@ -12,32 +12,31 @@ interface ImageUploadPageProps {
   topic: string;
   loadingQuestions: boolean;
   isLoading?: boolean;
+  isRegenerateSession?: boolean;
 }
 
 export function ImageUploadPage({ 
   userImage, 
   setUserImage, 
   onContinue, 
-  onBack,
-  topic,
+  onBack, 
+  topic, 
   loadingQuestions,
-  isLoading = false
+  isLoading = false,
+  isRegenerateSession = false
 }: ImageUploadPageProps) {
-  const isDark = false; // Default to light theme
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 py-12">
+    <div className="min-h-screen flex flex-col justify-start px-6 py-8">
       <div className="max-w-4xl mx-auto w-full">
         {/* Back Button */}
         <motion.button
           onClick={onBack}
-          className={`mb-8 inline-flex items-center px-4 py-2 rounded-full ${
-            isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50'
-          } shadow-lg transition-all duration-200`}
+          className="mb-6 inline-flex items-center px-4 py-2 rounded-full bg-card text-card-foreground hover:bg-accent shadow-lg transition-all duration-200 border border-border"
           whileHover={{ scale: 1.05, x: -5 }}
           whileTap={{ scale: 0.95 }}
         >
-          ← Back to Topic
+          ← {isRegenerateSession ? 'Cancel Regenerate' : 'Back to Topic'}
         </motion.button>
 
         {/* Main Content */}
@@ -48,26 +47,18 @@ export function ImageUploadPage({
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            <div className={`inline-flex items-center px-6 py-3 rounded-full ${
-              isDark 
-                ? 'bg-white/10 border border-white/20' 
-                : 'bg-blue-50 border border-blue-200'
-            } backdrop-blur-sm`}>
-              <Upload className="w-5 h-5 text-blue-500 mr-3" />
-              <span className={`font-semibold ${isDark ? 'text-white' : 'text-blue-600'}`}>
+            <div className="inline-flex items-center px-6 py-3 rounded-full bg-accent border border-border backdrop-blur-sm">
+              <Upload className="w-5 h-5 text-primary mr-3" />
+              <span className="font-semibold text-accent-foreground">
                 Step 2: Add your image (Optional)
               </span>
             </div>
 
-            <h1 className={`text-5xl md:text-7xl font-black leading-tight ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
+            <h1 className="text-5xl md:text-7xl font-black leading-tight text-foreground">
               Enhance Your Thumbnail
             </h1>
 
-            <p className={`text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed ${
-              isDark ? 'text-gray-300' : 'text-gray-700'
-            }`}>
+            <p className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed text-muted-foreground">
               Upload an image to include in your "{topic}" thumbnail, or skip to continue
             </p>
           </motion.div>

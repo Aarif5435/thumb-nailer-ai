@@ -1,14 +1,21 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, Star, Zap, Crown } from 'lucide-react';
+import { Check, Star, Zap, Crown, Lock } from 'lucide-react';
+import { useUser, SignInButton } from '@clerk/nextjs';
 
 export function PricingPlans() {
   const isDark = false; // Default to light theme
+  const { user, isLoaded } = useUser();
 
   const handlePayment = async (plan: any) => {
+    // Check if user is authenticated
+    if (!user) {
+      alert('Please sign in to purchase credits.');
+      return;
+    }
+
     try {
-      
       // Check if Razorpay key is available
       const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
       
@@ -75,12 +82,10 @@ export function PricingPlans() {
       };
 
       script.onerror = () => {
-        console.error('Failed to load Razorpay script');
         alert('Failed to load payment system. Please try again.');
       };
 
     } catch (error) {
-      console.error('Payment error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       alert(`Payment failed: ${errorMessage}`);
     }
@@ -227,22 +232,43 @@ export function PricingPlans() {
 
             {/* CTA Button */}
             <div className="text-center mb-8">
-              <motion.button
-                onClick={() => handlePayment(plans[0])}
-                className="group relative px-16 py-6 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-2xl rounded-2xl shadow-2xl hover:shadow-3xl transform transition-all duration-300 hover:from-orange-600 hover:to-red-600 hover:scale-105 overflow-hidden"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {/* Button Shine Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                
-                <span className="relative z-10 flex items-center justify-center">
-                  🚀 Get Started Now - ₹59
-                  <div className="ml-3 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
-                  </div>
-                </span>
-              </motion.button>
+              {user ? (
+                <motion.button
+                  onClick={() => handlePayment(plans[0])}
+                  className="group relative px-16 py-6 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-2xl rounded-2xl shadow-2xl hover:shadow-3xl transform transition-all duration-300 hover:from-orange-600 hover:to-red-600 hover:scale-105 overflow-hidden"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {/* Button Shine Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  
+                  <span className="relative z-10 flex items-center justify-center">
+                    🚀 Get Started Now - ₹59
+                    <div className="ml-3 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                      <div className="w-3 h-3 bg-white rounded-full"></div>
+                    </div>
+                  </span>
+                </motion.button>
+              ) : (
+                <SignInButton>
+                  <motion.button
+                    className="group relative px-16 py-6 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-2xl rounded-2xl shadow-2xl hover:shadow-3xl transform transition-all duration-300 hover:from-orange-600 hover:to-red-600 hover:scale-105 overflow-hidden"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {/* Button Shine Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    
+                    <span className="relative z-10 flex items-center justify-center">
+                      <Lock className="w-6 h-6 mr-3" />
+                      Sign In to Purchase - ₹59
+                      <div className="ml-3 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-white rounded-full"></div>
+                      </div>
+                    </span>
+                  </motion.button>
+                </SignInButton>
+              )}
             </div>
 
             {/* Trust Indicators */}
@@ -256,10 +282,7 @@ export function PricingPlans() {
                   <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                   <span className="text-slate-600 font-medium">Instant Access</span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                  <span className="text-slate-600 font-medium">Money Back Guarantee</span>
-                </div>
+
               </div>
             </div>
           </motion.div>

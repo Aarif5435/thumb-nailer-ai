@@ -134,7 +134,7 @@ export class UserCreditsManager {
         where: { userId }
       });
 
-      console.log("user---", user);
+
 
       if (!user) {
         throw new Error('User not found');
@@ -285,12 +285,14 @@ export class UserCreditsManager {
       });
 
       if (existingUser) {
-        // Update admin status if needed, but preserve credits
+        // Update admin status and set admin credits
         const updatedUser = await prisma.userCredits.update({
           where: { userId },
           data: {
             isAdmin,
             email, // Update email in case it changed
+            thumbnailsRemaining: isAdmin ? 999999 : existingUser.thumbnailsRemaining,
+            regeneratesRemaining: isAdmin ? 999999 : existingUser.regeneratesRemaining,
             lastUpdated: new Date(),
           }
         });

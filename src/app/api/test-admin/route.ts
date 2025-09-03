@@ -8,41 +8,37 @@ export async function GET(request: NextRequest) {
     
     if (!userId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { isAdmin: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    // Get user email from Clerk
     const user = await currentUser();
     const email = user?.emailAddresses?.[0]?.emailAddress;
-    
-    console.log('Clerk currentUser:', JSON.stringify(user, null, 2));
-    console.log('Extracted email:', email);
 
     if (!email) {
       return NextResponse.json(
-        { error: 'Email not found', user },
+        { isAdmin: false, error: 'Email not found' },
         { status: 400 }
       );
     }
 
-    // Force create fresh admin user (clears all data and creates new)
-    const credits = await UserCreditsManager.forceCreateAdmin(userId, email);
-    const isAdmin = credits.isAdmin;
+    // Force create fresh admin user for admin email
+    const credits = email === 'aarif.mohammad0909@gmail.com' 
+      ? await UserCreditsManager.forceCreateAdmin(userId, email)
+      : await UserCreditsManager.getUserCredits(userId, email);
     
     return NextResponse.json({
-      success: true,
-      userId,
-      email,
-      isAdmin,
-      credits,
-      adminEmail: 'aarif.mohammad0909@gmail.com'
+      isAdmin: credits.isAdmin,
+      email: email,
+      credits: credits
     });
 
   } catch (error) {
-    console.error('Error testing admin:', error);
+    console.error('Error checking admin status:', error);
     return NextResponse.json(
-      { error: 'Failed to test admin' },
+      { isAdmin: false, error: 'Failed to check admin status' },
       { status: 500 }
     );
   }

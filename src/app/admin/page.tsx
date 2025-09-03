@@ -396,9 +396,9 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -433,7 +433,7 @@ export default function AdminPanel() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200"
+              className="bg-card rounded-2xl shadow-lg p-6 border border-border"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -450,7 +450,7 @@ export default function AdminPanel() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200"
+              className="bg-card rounded-2xl shadow-lg p-6 border border-border"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -467,7 +467,7 @@ export default function AdminPanel() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200"
+              className="bg-card rounded-2xl shadow-lg p-6 border border-border"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -484,7 +484,7 @@ export default function AdminPanel() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200"
+              className="bg-card rounded-2xl shadow-lg p-6 border border-border"
             >
               <div className="flex items-center justify-between">
                 <div>

@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model UserCredits {
@@ -29,28 +30,34 @@ model UserCredits {
 }
 
 model ThumbnailHistory {
-  id          String   @id @default(cuid())
-  userId      String
-  topic       String
-  prompt      String
-  imageUrl    String?  // Base64 or URL
-  ctrScore    Float?
-  ctrAnalysis String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  userId              String
+  topic               String
+  prompt              String
+  imageUrl            String?  // Base64 or URL
+  ctrScore            Float?
+  ctrAnalysis         String?
+  similarThumbnails   String?  // JSON string of similar thumbnails
+  enhancedQuery       String?  // Enhanced search query
+  userAnswers         String?  // JSON string of user answers
+  userImage           String?  // Base64 encoded user image
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   // Relations
-  user        UserCredits @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user                UserCredits @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("thumbnail_history")
 }
 
 model RegenerateSession {
-  id        String   @id @default(cuid())
-  userId    String
-  topic     String
-  createdAt DateTime @default(now())
-  expiresAt DateTime
+  id                   String   @id @default(cuid())
+  userId               String
+  topic                String
+  originalThumbnailId  String?  // ID of the thumbnail being regenerated
+  userImage            String?  // Original user uploaded image (base64)
+  createdAt            DateTime @default(now())
+  expiresAt            DateTime
 
   @@map("regenerate_sessions")
 }

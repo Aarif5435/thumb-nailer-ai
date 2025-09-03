@@ -1,8 +1,8 @@
 'use client';
 
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Youtube, Sparkles, Menu, X, Moon, Sun, LogOut, User } from 'lucide-react';
-import { useState } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import Link from 'next/link';
 
@@ -17,8 +17,33 @@ export function Header({ currentPage, onReset }: HeaderProps) {
   const { user } = useUser();
   
   const toggleTheme = () => {
-    setIsDark(!isDark);
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    
+    // Apply theme to document
+    if (newTheme) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Store theme preference
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
+
+  // Initialize theme on mount
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    // Default to light mode instead of following system preference
+    const shouldBeDark = savedTheme === 'dark';
+    
+    setIsDark(shouldBeDark);
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
 
   const steps = [
     { id: 'topic', name: 'Topic', completed: ['image', 'questions', 'result'].includes(currentPage) },

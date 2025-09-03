@@ -79,20 +79,20 @@ export function UserCredits() {
 
   return (
     <motion.div
-      className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-200 shadow-lg"
+      className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200 shadow-sm"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           {credits.isAdmin ? (
-            <Crown className="w-5 h-5 text-yellow-500" />
+            <Crown className="w-4 h-4 text-yellow-500" />
           ) : (
-            <Zap className="w-5 h-5 text-orange-500" />
+            <Zap className="w-4 h-4 text-orange-500" />
           )}
-          <h3 className="text-lg font-bold text-slate-900">
+          <h3 className="text-sm font-bold text-slate-900">
             {credits.isAdmin ? 'Admin Access' : 'Your Credits'}
           </h3>
         </div>
@@ -104,14 +104,14 @@ export function UserCredits() {
       </div>
 
       {/* Credits Display */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         {/* Free Preview */}
-        <div className="bg-white rounded-xl p-4 border border-orange-100">
-          <div className="flex items-center space-x-2 mb-2">
-            <Sparkles className="w-4 h-4 text-green-500" />
-            <span className="text-sm font-medium text-slate-600">Free Preview</span>
+        <div className="bg-white rounded-lg p-3 border border-orange-100">
+          <div className="flex items-center space-x-1 mb-1">
+            <Sparkles className="w-3 h-3 text-green-500" />
+            <span className="text-xs font-medium text-slate-600">Free Preview</span>
           </div>
-          <div className="text-2xl font-bold text-slate-900">
+          <div className="text-lg font-bold text-slate-900">
             {credits.isAdmin ? '∞' : credits.hasUsedFreePreview ? '0' : '1'}
           </div>
           <div className="text-xs text-slate-500">
@@ -120,12 +120,12 @@ export function UserCredits() {
         </div>
 
         {/* Thumbnails */}
-        <div className="bg-white rounded-xl p-4 border border-orange-100">
-          <div className="flex items-center space-x-2 mb-2">
-            <Zap className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-medium text-slate-600">Thumbnails</span>
+        <div className="bg-white rounded-lg p-3 border border-orange-100">
+          <div className="flex items-center space-x-1 mb-1">
+            <Zap className="w-3 h-3 text-orange-500" />
+            <span className="text-xs font-medium text-slate-600">Thumbnails</span>
           </div>
-          <div className="text-2xl font-bold text-slate-900">
+          <div className="text-lg font-bold text-slate-900">
             {credits.isAdmin ? '∞' : credits.thumbnailsRemaining}
           </div>
           <div className="text-xs text-slate-500">
@@ -134,12 +134,12 @@ export function UserCredits() {
         </div>
 
         {/* Regenerates */}
-        <div className="bg-white rounded-xl p-4 border border-orange-100">
-          <div className="flex items-center space-x-2 mb-2">
-            <RefreshCw className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-medium text-slate-600">Regenerates</span>
+        <div className="bg-white rounded-lg p-3 border border-orange-100">
+          <div className="flex items-center space-x-1 mb-1">
+            <RefreshCw className="w-3 h-3 text-orange-500" />
+            <span className="text-xs font-medium text-slate-600">Regenerates</span>
           </div>
-          <div className="text-2xl font-bold text-slate-900">
+          <div className="text-lg font-bold text-slate-900">
             {credits.isAdmin ? '∞' : credits.regeneratesRemaining}
           </div>
           <div className="text-xs text-slate-500">
@@ -175,6 +175,75 @@ export function UserCredits() {
           <p className="text-sm text-blue-800">
             🎯 You've used your free preview! Purchase credits to download, regenerate, or create more thumbnails.
           </p>
+        </motion.div>
+      )}
+
+      {/* Subtle Package Promotion for Low Credits */}
+      {!credits.isAdmin && credits.thumbnailsRemaining <= 2 && credits.thumbnailsRemaining > 0 && (
+        <motion.div
+          className="mt-4 p-3 bg-gradient-to-r from-orange-100 to-red-100 border border-orange-200 rounded-lg"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-orange-800">
+                💡 Running low? Get 3 thumbnails + 5 regenerates for just ₹59
+              </p>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ 
+                        amount: 59, // ₹59 in rupees
+                        currency: 'INR',
+                      package: '3_thumbnails_5_regenerates'
+                    })
+                  });
+                  
+                  if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Load Razorpay script
+                    const script = document.createElement('script');
+                    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                    script.onload = () => {
+                      const options = {
+                        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                        amount: data.amount,
+                        currency: data.currency,
+                        name: 'Thumb-nailer',
+                        description: '3 Thumbnails + 5 Regenerates',
+                        order_id: data.id,
+                        image: '/favicon.ico',
+                        callback_url: `${window.location.origin}/api/verify-payment`,
+                        prefill: {
+                          name: user?.fullName || '',
+                          email: user?.primaryEmailAddress?.emailAddress || '',
+                        },
+                        theme: {
+                          color: '#ff6b35'
+                        }
+                      };
+                      
+                      const rzp = new (window as any).Razorpay(options);
+                      rzp.open();
+                    };
+                    document.head.appendChild(script);
+                  }
+                } catch (error) {
+                  alert('Failed to initiate payment. Please try again.');
+                }
+              }}
+              className="text-xs bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full hover:from-orange-600 hover:to-red-600 transition-all duration-200"
+            >
+              Buy Now
+            </button>
+          </div>
         </motion.div>
       )}
     </motion.div>

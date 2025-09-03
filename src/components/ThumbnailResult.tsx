@@ -36,7 +36,7 @@ export function ThumbnailResult({
     let recommendations: string[] = [];
     
     // Analyze color contrast and palette
-    const colorCount = thumbnail.metadata.colors.length;
+    const colorCount = thumbnail.metadata?.colors?.length || 0;
     if (colorCount >= 4) {
       score += 8;
       insights.push('Excellent color diversity');
@@ -50,7 +50,7 @@ export function ThumbnailResult({
     }
     
     // Analyze visual style
-    if (thumbnail.metadata.style && thumbnail.metadata.style !== 'Unknown') {
+    if (thumbnail.metadata?.style && thumbnail.metadata.style !== 'Unknown') {
       score += 6;
       insights.push(`${thumbnail.metadata.style} style detected`);
     } else {
@@ -60,7 +60,7 @@ export function ThumbnailResult({
     
     // Analyze target audience alignment
     if (userAnswers.targetAudience) {
-      const audienceScore = analyzeAudienceAlignment(userAnswers.targetAudience, thumbnail.metadata.style);
+      const audienceScore = analyzeAudienceAlignment(userAnswers.targetAudience, thumbnail.metadata?.style || 'Unknown');
       score += audienceScore.points;
       insights.push(audienceScore.insight);
       if (audienceScore.recommendation) {
@@ -70,13 +70,13 @@ export function ThumbnailResult({
     
     // Analyze emotion and content type
     if (userAnswers.emotion && userAnswers.contentType) {
-      const emotionScore = analyzeEmotionContentAlignment(userAnswers.emotion, userAnswers.contentType, thumbnail.metadata.style);
+      const emotionScore = analyzeEmotionContentAlignment(userAnswers.emotion, userAnswers.contentType, thumbnail.metadata?.style || 'Unknown');
       score += emotionScore.points;
       insights.push(emotionScore.insight);
     }
     
     // Analyze key elements presence
-    if (userAnswers.keyElements && thumbnail.metadata.elements.length > 0) {
+    if (userAnswers.keyElements && thumbnail.metadata?.elements?.length > 0) {
       const elementScore = analyzeElementAlignment(userAnswers.keyElements, thumbnail.metadata.elements);
       score += elementScore.points;
       insights.push(elementScore.insight);
@@ -211,7 +211,7 @@ export function ThumbnailResult({
   
   // Get dynamic style analysis
   const getStyleAnalysis = () => {
-    const style = thumbnail.metadata.style || userAnswers.stylePreference || 'Modern';
+    const style = thumbnail.metadata?.style || userAnswers.stylePreference || 'Modern';
     const styleInsights: Record<string, { description: string, strength: string }> = {
       'Modern': { description: 'Contemporary design', strength: 'Trendy appeal' },
       'Minimal': { description: 'Clean simplicity', strength: 'Professional look' },
@@ -232,7 +232,7 @@ export function ThumbnailResult({
   
   // Get dynamic color analysis
   const getColorAnalysis = () => {
-    const colorCount = thumbnail.metadata.colors.length;
+    const colorCount = thumbnail.metadata?.colors?.length || 0;
     if (colorCount >= 5) return { description: 'Rich palette', strength: 'Visual depth' };
     if (colorCount >= 3) return { description: 'Balanced colors', strength: 'Good contrast' };
     return { description: 'Minimal colors', strength: 'Clean look' };
@@ -293,14 +293,14 @@ export function ThumbnailResult({
           </div>
           
           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-2xl border border-blue-200">
-            <div className="text-lg font-bold text-blue-600 mb-2">{thumbnail.metadata.style || 'Modern'}</div>
+            <div className="text-lg font-bold text-blue-600 mb-2">{thumbnail.metadata?.style || 'Modern'}</div>
             <div className="text-sm font-medium text-blue-700">Visual Style</div>
             <div className="text-xs text-blue-600 mt-1">{styleAnalysis.strength}</div>
           </div>
           
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
             <div className="flex space-x-1 mb-2">
-              {thumbnail.metadata.colors.slice(0, 3).map((color, index) => (
+              {(thumbnail.metadata?.colors || []).slice(0, 3).map((color, index) => (
                 <div
                   key={index}
                   className="w-4 h-4 rounded-full border border-white shadow-sm"
@@ -369,7 +369,7 @@ export function ThumbnailResult({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            {regenerating ? 'Regenerating...' : 'Regenerate Thumbnail'}
+            {regenerating ? 'Setting up...' : 'Regenerate with Changes'}
           </motion.button>
           
           <motion.button
@@ -378,7 +378,7 @@ export function ThumbnailResult({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Start Over
+            Create New Thumbnail
           </motion.button>
         </div>
       </motion.div>

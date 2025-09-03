@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Zap, Star, Crown, X } from 'lucide-react';
+import { Toast } from './Toast';
 
 interface PaywallProps {
   isOpen: boolean;
@@ -11,6 +13,16 @@ interface PaywallProps {
 
 export function Paywall({ isOpen, onClose, feature = 'premium feature' }: PaywallProps) {
   const isDark = false; // Default to light theme
+  const [toast, setToast] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message?: string;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: ''
+  });
 
   const handlePayment = async (plan: any) => {
     try {
@@ -29,7 +41,6 @@ export function Paywall({ isOpen, onClose, feature = 'premium feature' }: Paywal
       const orderData = await orderResponse.json();
       
       if (!orderData.success) {
-        console.error('Order creation failed:', orderData);
         throw new Error('Failed to create order: ' + (orderData.error || 'Unknown error'));
       }
 
@@ -43,21 +54,21 @@ export function Paywall({ isOpen, onClose, feature = 'premium feature' }: Paywal
 
         // Wait for script to load
         await new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = reject;
+          script.onload = () => resolve(true);
+          script.onerror = (error) => reject(error);
         });
       }
 
       const options = {
-        key: 'rzp_live_RCP6hrsPqK7mee', // Your live key from environment
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: orderData.amount, // Amount in paise
         currency: orderData.currency,
         name: 'Thumb-nailer',
         description: `${plan.name} - 3 thumbnails + 5 regenerates`,
-        image: '/logo.png',
+        image: '/favicon.ico',
         order_id: orderData.orderId,
+        callback_url: `${window.location.origin}/api/verify-payment`,
         handler: function (response: any) {
-          console.log('Payment successful:', response);
           // Call webhook to verify payment and add credits
           handlePaymentSuccess(response);
         },
@@ -73,17 +84,31 @@ export function Paywall({ isOpen, onClose, feature = 'premium feature' }: Paywal
           color: '#f97316'
         },
         modal: {
-          ondismiss: function() {
-            console.log('Payment modal closed');
-          }
+          ondismiss: function() {}
         }
       };
 
+    
       const rzp = new (window as any).Razorpay(options);
+      
+      rzp.on('payment.failed', function (response: any) {
+        setToast({
+          isOpen: true,
+          type: 'error',
+          title: 'Payment Failed',
+          message: response.error.description || 'Unknown error occurred'
+        });
+      });
+      
       rzp.open();
     } catch (error) {
-      console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Please try again.';
+      setToast({
+        isOpen: true,
+        type: 'error',
+        title: 'Payment Failed',
+        message: errorMessage
+      });
     }
   };
 
@@ -105,16 +130,31 @@ export function Paywall({ isOpen, onClose, feature = 'premium feature' }: Paywal
       const verifyData = await verifyResponse.json();
       
       if (verifyData.success) {
-        alert('Payment successful! You can now create 3 thumbnails.');
+        setToast({
+          isOpen: true,
+          type: 'success',
+          title: 'Payment Successful!',
+          message: 'You can now create 3 thumbnails. Credits added to your account.'
+        });
         onClose(); // Close paywall after successful payment
         // Optionally refresh the page or update user credits
         window.location.reload();
       } else {
-        alert('Payment verification failed. Please contact support.');
+        setToast({
+          isOpen: true,
+          type: 'error',
+          title: 'Payment Verification Failed',
+          message: 'Please contact support if the issue persists.'
+        });
       }
     } catch (error) {
-      console.error('Payment verification error:', error);
-      alert('Payment verification failed. Please contact support.');
+      const errorMessage = error instanceof Error ? error.message : 'Please contact support.';
+      setToast({
+        isOpen: true,
+        type: 'error',
+        title: 'Payment Verification Failed',
+        message: errorMessage
+      });
     }
   };
 
@@ -290,6 +330,15 @@ export function Paywall({ isOpen, onClose, feature = 'premium feature' }: Paywal
           </p>
         </div>
       </motion.div>
+
+      {/* Toast Notification */}
+      <Toast
+        isOpen={toast.isOpen}
+        onClose={() => setToast(prev => ({ ...prev, isOpen: false }))}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+      />
     </motion.div>
   );
 }

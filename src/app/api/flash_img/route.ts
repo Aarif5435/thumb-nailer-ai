@@ -45,6 +45,8 @@ export async function POST(request: Request) {
         }
       }
     });
+    
+
 
     // Only check and deduct credits if this is NOT a regenerate session
     if (email && !isRegenerateSession) {
@@ -55,7 +57,7 @@ export async function POST(request: Request) {
           { status: 402 }
         );
       }
-      console.log('Credits deducted successfully:', creditResult.credits);
+
     }
 
     // Generate thumbnail(s) using YouTube API for references
@@ -73,51 +75,57 @@ export async function POST(request: Request) {
       }
 
       // Save to thumbnail history
+      let savedThumbnail = null;
       if (email) {
         try {
-          console.log('Saving thumbnail history for user:', userId, 'email:', email);
-          console.log('Image URL length:', thumbnail.imageUrl?.length);
-          console.log('Image URL starts with data:', thumbnail.imageUrl?.startsWith('data:'));
-          console.log('Image URL first 100 chars:', thumbnail.imageUrl?.substring(0, 100));
-          
-          const savedThumbnail = await prisma.thumbnailHistory.create({
-            data: {
-              userId,
-              topic: userAnswers.topic,
-              prompt: JSON.stringify(userAnswers),
-              imageUrl: thumbnail.imageUrl,
-              ctrScore: thumbnail.metadata.ctrOptimization?.score || null,
-              ctrAnalysis: thumbnail.metadata.ctrOptimization?.insights?.join(', ') || null,
-            }
-          });
-          console.log('Successfully saved thumbnail:', savedThumbnail.id);
-          console.log('Saved image URL length:', savedThumbnail.imageUrl?.length);
+          if (isRegenerateSession && isRegenerateSession.originalThumbnailId) {
+            // Update existing thumbnail for regenerate
+            savedThumbnail = await prisma.thumbnailHistory.update({
+              where: { id: isRegenerateSession.originalThumbnailId },
+              data: {
+                topic: userAnswers.topic,
+                prompt: JSON.stringify(userAnswers),
+                imageUrl: thumbnail.imageUrl,
+                ctrScore: thumbnail.metadata?.ctrOptimization?.score || null,
+                ctrAnalysis: thumbnail.metadata?.ctrOptimization?.insights?.join(', ') || null,
+                updatedAt: new Date(),
+              }
+            });
+          } else {
+            // Create new thumbnail for new generation
+            savedThumbnail = await prisma.thumbnailHistory.create({
+              data: {
+                userId,
+                topic: userAnswers.topic,
+                prompt: JSON.stringify(userAnswers),
+                imageUrl: thumbnail.imageUrl,
+                ctrScore: thumbnail.metadata?.ctrOptimization?.score || null,
+                ctrAnalysis: thumbnail.metadata?.ctrOptimization?.insights?.join(', ') || null,
+              }
+            });
+          }
 
           // If this was a regenerate session, deduct regenerate credits now
           if (isRegenerateSession) {
             const regenerateResult = await UserCreditsManager.useRegenerate(userId);
             if (regenerateResult.success) {
-              console.log('Regenerate credits deducted successfully:', regenerateResult.credits);
               // Clear the regenerate session
               await prisma.regenerateSession.delete({
                 where: { id: isRegenerateSession.id }
               });
-            } else {
-              console.error('Failed to deduct regenerate credits:', regenerateResult.message);
             }
           }
         } catch (error) {
-          console.error('Error saving thumbnail history:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
+          // Error saving thumbnail history
         }
-      } else {
-        console.log('No email found, skipping thumbnail history save');
       }
 
       return NextResponse.json({
+        id: savedThumbnail?.id || null, // Return the unique ID for the result page
         thumbnail,
         similarThumbnails: [], // No longer using Qdrant
         enhancedQuery: userAnswers.topic,
+        isRegenerate: !!isRegenerateSession, // Indicate if this was a regenerate
       });
     } else {
       const thumbnails = await thumbnailGenerator.generateMultipleVariations(

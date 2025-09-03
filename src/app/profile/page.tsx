@@ -59,6 +59,7 @@ export default function ProfilePage() {
   const [history, setHistory] = useState<ThumbnailHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const [modal, setModal] = useState<{
     isOpen: boolean;
     type: 'success' | 'error' | 'warning' | 'info';
@@ -83,7 +84,7 @@ export default function ProfilePage() {
       const creditsResponse = await fetch('/api/test-admin');
       if (creditsResponse.ok) {
         const creditsData = await creditsResponse.json();
-        console.log('Profile - fetched credits data:', creditsData);
+        // Loaded credits data
         setCredits(creditsData.credits);
       }
 
@@ -94,7 +95,7 @@ export default function ProfilePage() {
         setHistory(historyData);
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      // Failed to fetch user data
     } finally {
       setLoading(false);
     }
@@ -132,7 +133,7 @@ export default function ProfilePage() {
             });
           }
         } catch (error) {
-          console.error('Error deleting thumbnail:', error);
+          // Failed to delete thumbnail
           setModal({
             isOpen: true,
             type: 'error',
@@ -162,12 +163,13 @@ export default function ProfilePage() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading thumbnail:', error);
+      // Failed to download thumbnail
       alert('Failed to download thumbnail');
     }
   };
 
   const regenerateThumbnail = async (thumbnailId: string, topic: string) => {
+    setRegeneratingId(thumbnailId);
     try {
       // Check if user has regenerate credits
       if (!credits?.isAdmin && (credits?.regeneratesRemaining || 0) <= 0) {
@@ -185,11 +187,27 @@ export default function ProfilePage() {
         return;
       }
 
+      // Get the original thumbnail data to extract user image
+      const thumbnailData = history.find(item => item.id === thumbnailId);
+      let userImage = null;
+      if (thumbnailData?.prompt) {
+        try {
+          const promptData = JSON.parse(thumbnailData.prompt);
+          userImage = promptData.userImage || null;
+        } catch (error) {
+          // Error parsing prompt data
+        }
+      }
+
       // Create regenerate session in database
       const response = await fetch('/api/regenerate-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic })
+        body: JSON.stringify({ 
+          topic,
+          originalThumbnailId: thumbnailId,
+          userImage
+        })
       });
 
       if (!response.ok) {
@@ -203,10 +221,10 @@ export default function ProfilePage() {
         return;
       }
 
-      // Navigate to home page - the main app will detect the regenerate session
-      router.push('/');
+      // Navigate to home page with source parameter - the main app will detect the regenerate session
+      router.push('/?from=profile');
     } catch (error) {
-      console.error('Error regenerating thumbnail:', error);
+      // Failed to regenerate
       setModal({
         isOpen: true,
         type: 'error',
@@ -214,6 +232,8 @@ export default function ProfilePage() {
         message: 'Failed to regenerate thumbnail. Please try again.',
         confirmText: 'OK'
       });
+    } finally {
+      setRegeneratingId(null);
     }
   };
 
@@ -243,11 +263,11 @@ export default function ProfilePage() {
       </div>
     );
   }
-console.log("history",history)
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-card shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -292,7 +312,7 @@ console.log("history",history)
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
+              className="bg-card rounded-2xl shadow-lg p-6 border border-border"
             >
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                 <CreditCard className="w-5 h-5 mr-2 text-orange-500" />
@@ -402,7 +422,7 @@ console.log("history",history)
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
+              className="bg-card rounded-2xl shadow-lg p-6 border border-border"
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 flex items-center">
@@ -544,10 +564,19 @@ console.log("history",history)
                             </button>
                             <button
                               onClick={() => regenerateThumbnail(item.id, item.topic)}
-                              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium flex items-center space-x-2 shadow-sm"
+                              disabled={regeneratingId === item.id}
+                              className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium flex items-center space-x-2 shadow-sm ${
+                                regeneratingId === item.id
+                                  ? 'bg-orange-300 text-white cursor-not-allowed'
+                                  : 'bg-orange-500 text-white hover:bg-orange-600'
+                              }`}
                             >
-                              <Regenerate className="w-4 h-4" />
-                              <span>Regenerate</span>
+                              {regeneratingId === item.id ? (
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <Regenerate className="w-4 h-4" />
+                              )}
+                              <span>{regeneratingId === item.id ? 'Regenerating...' : 'Regenerate'}</span>
                             </button>
                             <button
                               onClick={() => deleteThumbnail(item.id)}

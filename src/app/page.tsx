@@ -9,7 +9,7 @@ import { Header } from '@/components/Header';
 import { HeroSection } from '@/components/HeroSection';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { UserCredits } from '@/components/UserCredits';
-import { AdminDebug } from '@/components/AdminDebug';
+
 import { useUser, SignInButton } from '@clerk/nextjs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles, Lock } from 'lucide-react';
@@ -32,8 +32,14 @@ function HomeContent() {
   const [loading, setLoading] = useState(false);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [isRegenerateSession, setIsRegenerateSession] = useState(false);
+  const [regenerateSource, setRegenerateSource] = useState<'profile' | 'result' | null>(null);
 
   const navigateTo = (page: 'home' | 'topic' | 'image' | 'questions' | 'result') => {
+    // During regenerate session, restrict navigation to first steps
+    if (isRegenerateSession && (page === 'topic' || page === 'image')) {
+      return; // Don't allow navigation to topic or image steps during regenerate
+    }
     setCurrentPage(page);
   };
 
@@ -44,6 +50,28 @@ function HomeContent() {
     setQuestions([]);
     setAnswers({});
     setResult(null);
+    setIsRegenerateSession(false);
+    setRegenerateSource(null);
+  };
+
+  const cancelRegenerate = () => {
+    // Clear the regenerate session
+    fetch('/api/regenerate-session', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    
+    // Redirect back to where user came from
+    if (regenerateSource === 'profile') {
+      window.location.href = '/profile';
+    } else if (regenerateSource === 'result') {
+      // Go back to the previous page (result page)
+      window.history.back();
+    } else {
+      // Default to home page
+      resetApp();
+    }
   };
 
   // Check for regenerate session on component mount
@@ -55,17 +83,25 @@ function HomeContent() {
           const data = await response.json();
           if (data.success && data.topic) {
             setTopic(data.topic);
-            setCurrentPage('topic');
-            // Clear the session after use
-            await fetch('/api/regenerate-session', {
-              method: 'DELETE',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ sessionId: data.sessionId })
-            });
+            setIsRegenerateSession(true); // Mark as regenerate session
+            
+            // Detect where user came from based on URL or referrer
+            const urlParams = new URLSearchParams(window.location.search);
+            const source = urlParams.get('from') as 'profile' | 'result' | null;
+            setRegenerateSource(source);
+            
+            // Set the user image from regenerate session if available
+            if (data.userImage) {
+              setUserImage(data.userImage);
+            }
+            setLoadingQuestions(true); // Show loading while fetching questions
+            // Fetch questions for the regenerate session
+            await fetchQuestions(data.topic);
+            // Don't delete the session here - let the flash_img API delete it after deducting credits
           }
         }
       } catch (error) {
-        console.error('Error checking regenerate session:', error);
+        // Silent: regenerate session check failed
       }
     };
 
@@ -74,8 +110,8 @@ function HomeContent() {
     }
   }, [user]);
 
-  // Show loading while Clerk is loading
-  if (!isLoaded) {
+  // Show loading while Clerk is loading or while fetching questions for regenerate
+  if (!isLoaded || loadingQuestions) {
     return <LoadingScreen />;
   }
 
@@ -94,9 +130,7 @@ function HomeContent() {
         setAnswers({});
         navigateTo('questions');
       }
-    } catch (error) {
-      console.error('Error fetching questions:', error);
-    }
+    } catch (error) {}
     setLoadingQuestions(false);
   };
 
@@ -139,17 +173,23 @@ function HomeContent() {
 
       if (response.ok) {
         const data = await response.json();
-        setResult(data as ThumbnailData);
         
         // Mark free preview as used if this was a free preview
         if (checkData.credits && !checkData.credits.hasUsedFreePreview && !checkData.credits.isAdmin) {
           await fetch('/api/use-free-preview', { method: 'POST' });
         }
         
-        navigateTo('result');
+        // Redirect to the result page with the unique ID
+        if (data.id) {
+          window.location.href = `/result/${data.id}`;
+        } else {
+          // Fallback to inline result if no ID
+          setResult(data as ThumbnailData);
+          navigateTo('result');
+        }
       }
     } catch (error) {
-      console.error('Error generating thumbnail:', error);
+      // Generation failed
     } finally {
       setLoading(false);
     }
@@ -167,7 +207,6 @@ function HomeContent() {
       });
 
       const creditData = await creditResponse.json();
-      console.log("canGenerate", creditData)
 
       if (!creditData.success) {
         // No credits available, show paywall
@@ -177,9 +216,7 @@ function HomeContent() {
 
       // Proceed with regeneration
       await generateThumbnail();
-    } catch (error) {
-      console.error('Error regenerating thumbnail:', error);
-    }
+    } catch (error) {}
   };
 
   // Render current page
@@ -190,15 +227,16 @@ function HomeContent() {
       
       case 'topic':
         return user ? (
-          <div className="container mx-auto px-4 py-8">
+          <div className="container mx-auto px-4 py-4">
             <div className="max-w-4xl mx-auto">
               <UserCredits />
-              <div className="mt-8">
+              <div className="mt-6">
                 <TopicPage 
                   topic={topic}
                   setTopic={setTopic}
                   onContinue={() => navigateTo('image')}
-                  onBack={() => navigateTo('home')}
+                  onBack={isRegenerateSession ? cancelRegenerate : () => navigateTo('home')}
+                  isRegenerateSession={isRegenerateSession}
                 />
               </div>
             </div>
@@ -230,12 +268,12 @@ function HomeContent() {
                 </SignInButton>
                 
                 <motion.button
-                  onClick={() => navigateTo('home')}
+                  onClick={isRegenerateSession ? cancelRegenerate : () => navigateTo('home')}
                   className="w-full px-8 py-3 text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-300"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Back to Home
+                  {isRegenerateSession ? 'Cancel Regenerate' : 'Back to Home'}
                 </motion.button>
               </div>
             </div>
@@ -249,9 +287,10 @@ function HomeContent() {
             setUserImage={setUserImage}
             onContinue={() => fetchQuestions(topic)}
             loadingQuestions={loadingQuestions}
-            onBack={() => navigateTo('topic')}
+            onBack={isRegenerateSession ? cancelRegenerate : () => navigateTo('topic')}
             topic={topic}
             isLoading={loading}
+            isRegenerateSession={isRegenerateSession}
           />
         );
       
@@ -263,7 +302,8 @@ function HomeContent() {
             onAnswersChange={setAnswers}
             onComplete={generateThumbnail}
             topic={topic}
-            onBack={() => navigateTo('topic')}
+            onBack={isRegenerateSession ? cancelRegenerate : () => navigateTo('topic')}
+            isRegenerateSession={isRegenerateSession}
           />
         );
       
@@ -284,9 +324,7 @@ function HomeContent() {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${
-      isDark ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
+    <div className="min-h-screen transition-colors duration-500 bg-background text-foreground">
       <Header currentPage={currentPage} onReset={resetApp} />
       
       <AnimatePresence mode="wait">
@@ -303,36 +341,98 @@ function HomeContent() {
 
               {loading && <LoadingScreen />}
 
-        {/* Admin Debug Component */}
-        {/* <AdminDebug /> */}
 
-        {/* Paywall Modal */}
+
+        {/* Enhanced Paywall Modal */}
         {showPaywall && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full">
-              <h3 className="text-2xl font-bold text-center mb-4">Credits Required!</h3>
-              <p className="text-center text-slate-600 mb-6">
-                You've used your free preview. Purchase credits to download, regenerate, or create more thumbnails!
-              </p>
+            <div className="bg-white rounded-2xl p-8 max-w-lg w-full">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Credits Required!</h3>
+                <p className="text-slate-600">
+                  You've used your free preview. Purchase credits to download, regenerate, or create more thumbnails!
+                </p>
+              </div>
+              
+              {/* Package Details */}
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 mb-6 border border-orange-200">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-600 mb-1">₹59</div>
+                  <div className="text-sm text-slate-600 mb-2">Special Package Deal</div>
+                  <div className="space-y-1 text-sm text-slate-700">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span>3 New Thumbnails</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span>5 Regenerates</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
               <div className="flex space-x-4">
                 <button
                   onClick={() => setShowPaywall(false)}
-                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50"
+                  className="flex-1 px-4 py-3 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    setShowPaywall(false);
-                    // Scroll to pricing section
-                    const pricingSection = document.getElementById('pricing-section');
-                    if (pricingSection) {
-                      pricingSection.scrollIntoView({ behavior: 'smooth' });
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/create-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                          amount: 59, // ₹59 in rupees
+                          currency: 'INR',
+                          package: '3_thumbnails_5_regenerates'
+                        })
+                      });
+                      
+                      if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Load Razorpay script
+                        const script = document.createElement('script');
+                        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                        script.onload = () => {
+                          const options = {
+                            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                            amount: data.amount,
+                            currency: data.currency,
+                            name: 'Thumb-nailer',
+                            description: '3 Thumbnails + 5 Regenerates',
+                            order_id: data.id,
+                            image: '/favicon.ico',
+                            callback_url: `${window.location.origin}/api/verify-payment`,
+                            prefill: {
+                              name: user?.fullName || '',
+                              email: user?.primaryEmailAddress?.emailAddress || '',
+                            },
+                            theme: {
+                              color: '#ff6b35'
+                            }
+                          };
+                          
+                          const rzp = new (window as any).Razorpay(options);
+                          rzp.open();
+                          setShowPaywall(false);
+                        };
+                        document.head.appendChild(script);
+                      }
+                    } catch (error) {
+                      alert('Failed to initiate payment. Please try again.');
                     }
                   }}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200"
                 >
-                  Buy Credits
+                  Buy Now - ₹59
                 </button>
               </div>
             </div>
@@ -347,28 +447,27 @@ function TopicPage({
   topic, 
   setTopic, 
   onContinue, 
-  onBack 
+  onBack,
+  isRegenerateSession
 }: {
   topic: string;
   setTopic: (topic: string) => void;
   onContinue: () => void;
   onBack: () => void;
+  isRegenerateSession: boolean;
 }) {
-  const isDark = false; // Default to light theme
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 py-12">
+    <div className="min-h-screen flex flex-col justify-start px-6 py-8">
       <div className="max-w-4xl mx-auto w-full">
         {/* Back Button */}
         <motion.button
           onClick={onBack}
-          className={`mb-8 inline-flex items-center px-4 py-2 rounded-full ${
-            isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50'
-          } shadow-lg transition-all duration-200`}
+          className="mb-6 inline-flex items-center px-4 py-2 rounded-full bg-card text-card-foreground hover:bg-accent shadow-lg transition-all duration-200 border border-border"
           whileHover={{ scale: 1.05, x: -5 }}
           whileTap={{ scale: 0.95 }}
         >
-          ← Back to Home
+          ← {isRegenerateSession ? 'Cancel Regenerate' : 'Back to Home'}
         </motion.button>
 
         {/* Main Content */}
@@ -379,26 +478,18 @@ function TopicPage({
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            <div className={`inline-flex items-center px-6 py-3 rounded-full ${
-              isDark 
-                ? 'bg-white/10 border border-white/20' 
-                : 'bg-red-50 border border-red-200'
-            } backdrop-blur-sm`}>
-              <Sparkles className="w-5 h-5 text-red-500 mr-3" />
-              <span className={`font-semibold ${isDark ? 'text-white' : 'text-red-600'}`}>
+            <div className="inline-flex items-center px-6 py-3 rounded-full bg-accent border border-border backdrop-blur-sm">
+              <Sparkles className="w-5 h-5 text-primary mr-3" />
+              <span className="font-semibold text-accent-foreground">
                 Step 1: Tell us about your video
               </span>
             </div>
 
-            <h1 className={`text-5xl md:text-7xl font-black leading-tight ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
+            <h1 className="text-5xl md:text-7xl font-black leading-tight text-foreground">
               What's your video about?
             </h1>
 
-            <p className={`text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed ${
-              isDark ? 'text-gray-300' : 'text-gray-700'
-            }`}>
+            <p className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed text-muted-foreground">
               Describe your video topic and I'll create the perfect thumbnail for you
             </p>
           </motion.div>
@@ -412,12 +503,10 @@ function TopicPage({
           >
             <div className="relative">
               <motion.div
-                className={`relative rounded-3xl overflow-hidden ${
-                  isDark ? 'bg-gray-800/50' : 'bg-white/80'
-                } backdrop-blur-sm border-2 ${
+                className={`relative rounded-3xl overflow-hidden bg-card backdrop-blur-sm border-2 ${
                   topic.trim() 
-                    ? 'border-red-500 shadow-2xl shadow-red-500/20' 
-                    : isDark ? 'border-gray-600' : 'border-gray-300'
+                    ? 'border-primary shadow-2xl shadow-primary/20' 
+                    : 'border-border'
                 } transition-all duration-300`}
                 animate={topic.trim() ? { scale: [1, 1.02, 1] } : {}}
                 transition={{ duration: 0.3 }}
@@ -427,16 +516,12 @@ function TopicPage({
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   placeholder="e.g., How to master React in 30 days, Best workout routine for beginners..."
-                  className={`w-full px-8 py-6 text-xl bg-transparent ${
-                    isDark ? 'text-black placeholder-gray-400' : 'text-black placeholder-gray-500'
-                  } focus:outline-none`}
+                  className="w-full px-8 py-6 text-xl bg-transparent text-foreground placeholder-muted-foreground focus:outline-none"
                   onKeyPress={(e) => e.key === 'Enter' && topic.trim() && onContinue()}
                   autoFocus
                 />
                 
-                <div className={`absolute bottom-2 right-4 text-sm ${
-                  isDark ? 'text-gray-500' : 'text-gray-400'
-                }`}>
+                <div className="absolute bottom-2 right-4 text-sm text-muted-foreground">
                   {topic.length}/100
                 </div>
               </motion.div>
@@ -467,7 +552,8 @@ function QuestionsPage({
   onAnswersChange,
   onComplete,
   topic,
-  onBack
+  onBack,
+  isRegenerateSession
 }: {
   questions: Question[];
   answers: { [key: string]: string };
@@ -475,33 +561,32 @@ function QuestionsPage({
   onComplete: () => void;
   topic: string;
   onBack: () => void;
+  isRegenerateSession: boolean;
 }) {
-  const isDark = false; // Default to light theme
 
   return (
-    <div className="min-h-screen px-6 py-12">
+    <div className="min-h-screen px-6 py-8">
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}
         <motion.button
           onClick={onBack}
-          className={`mb-8 inline-flex items-center px-4 py-2 rounded-full ${
-            isDark ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50'
-          } shadow-lg transition-all duration-200`}
+          className="mb-6 inline-flex items-center px-4 py-2 rounded-full bg-card text-card-foreground hover:bg-accent shadow-lg transition-all duration-200 border border-border"
           whileHover={{ scale: 1.05, x: -5 }}
           whileTap={{ scale: 0.95 }}
         >
-          ← Back to Topic
+          ← {isRegenerateSession ? 'Cancel Regenerate' : 'Back to Topic'}
         </motion.button>
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className={`text-4xl md:text-6xl font-black mb-4 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>
-            Let's Perfect Your Thumbnail
+          <h1 className="text-4xl md:text-6xl font-black mb-4 text-foreground">
+            {isRegenerateSession ? 'Let\'s Improve Your Thumbnail' : 'Let\'s Perfect Your Thumbnail'}
           </h1>
-          <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-            Answer a few questions to create the perfect thumbnail for "{topic}"
+          <p className="text-xl text-muted-foreground">
+            {isRegenerateSession 
+              ? `Answer a few questions to improve your thumbnail for "${topic}"`
+              : `Answer a few questions to create the perfect thumbnail for "${topic}"`
+            }
           </p>
         </div>
 
